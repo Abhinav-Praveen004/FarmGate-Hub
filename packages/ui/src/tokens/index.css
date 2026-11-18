@@ -1,0 +1,80 @@
+/* FarmGate Hub Design Tokens - Extracted from design-taste-frontend (mint-pink-accounts) */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=Noto+Sans+Devanagari:wght@400..700&family=Noto+Sans+Tamil:wght@400..700&display=swap');
+
+:root {
+  /* Dealt Palette: mint-pink-accounts */
+  --p-bg: #f8f8f8;
+  --p-surface: #eeeeee;
+  --p-surface-elevated: #ffffff;
+  --p-ink: #0a0a0a;
+  --p-muted: #6a6a6a;
+  --p-border: #d4d4d4;
+  --p-border-subtle: #e5e5e5;
+
+  --p-accent: #1f6b3a;
+  --p-accent-ink: #ffffff;
+  --p-action: #1f6b3a;
+  --p-action-hover: #17522c;
+  --p-action-ink: #ffffff;
+
+  /* Inverted tokens */
+  --p-inv-bg: #0a0a0a;
+  --p-inv-surface: #171717;
+  --p-inv-ink: #f8f8f8;
+  --p-inv-muted: #939393;
+  --p-inv-accent: #1f6b3a;
+  --p-inv-accent-ink: #ffffff;
+  --p-inv-action: #1f6b3a;
+  --p-inv-action-ink: #ffffff;
+
+  /* Semantic status colors (Tested for outdoor sunlight contrast) */
+  --color-sell: #1f6b3a;
+  --color-sell-ink: #ffffff;
+  --color-hold: #b45309; /* Amber 700 */
+  --color-hold-ink: #ffffff;
+
+  --color-grade-a: #1f6b3a;
+  --color-grade-a-bg: #eaf4ed;
+  --color-grade-b: #b45309;
+  --color-grade-b-bg: #fef3c7;
+  --color-grade-c: #b91c1c;
+  --color-grade-c-bg: #fee2e2;
+
+  --color-pod-cold: #0284c7;
+  --color-solar: #d97706;
+
+  /* Typography Stack */
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-text: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --font-tamil: 'Noto Sans Tamil', 'Instrument Sans', system-ui, sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', 'Instrument Sans', system-ui, sans-serif;
+
+  /* Layout and Metrics */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  --min-touch-target: 48px;
+}
+
+[data-lang="ta"] {
+  font-family: var(--font-tamil);
+}
+
+[data-lang="hi"] {
+  font-family: var(--font-devanagari);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

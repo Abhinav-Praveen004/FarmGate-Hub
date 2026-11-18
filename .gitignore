@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 .cache/
+.taste-skill/profile/
 *.log
 *.sqlite
 *.sqlite-journal

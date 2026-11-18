@@ -32,3 +32,9 @@ Running log of completed tasks across project milestones.
 - [x] M2-T07: Implemented Server-Sent Events (`/api/events`) with real-time time-warp broadcasting.
 - [x] M2-T08: Verified double-entry ledger balance and full end-to-end lot lifecycle.
 - [x] M2-T09: Verified exact Screen 1, 2, and 3 values and Section 4.7 network model matches via API tests.
+- [x] M3-T01: Ran taste-skill profile selection (`mint-pink-accounts` palette: bg `#f8f8f8`, surface `#eeeeee`, ink `#0a0a0a`, accent `#1f6b3a`, serif `Instrument Serif`, sans `Instrument Sans`).
+- [x] M3-T02: Implemented CSS custom properties and Tailwind preset in `packages/ui/src/tokens/`.
+- [x] M3-T03: Implemented 6 signature interactive components (`RupeeWaterfall`, `SellHoldCard`, `LotTimeline`, `PodGauge`, `LeakyBucket`, `FinanceTable`) in `packages/ui/src/components/`.
+- [x] M3-T04: Scaffolded `apps/web` with Vite 8.3.8, Tailwind CSS, and React Router 7.
+- [x] M3-T05: Implemented `/styleguide` showcasing all 6 signature components with simulated toggles and metrics.
+- [x] M3-T06: Captured and verified headless browser screenshots at 1440px and 390px viewports (`docs/shots/`).
