@@ -49,6 +49,9 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
     { label: '1: PRICE', command: 'PRICE' },
     { label: '2: LOTS', command: 'LOTS' },
     { label: '3: RECEIPT', command: 'RECEIPT' },
+    { label: '🧅 ONION', command: 'ONION' },
+    { label: '🥔 POTATO', command: 'POTATO' },
+    { label: '📊 ALL CROPS', command: 'ALL PRICES' },
   ];
 
   return (
@@ -107,7 +110,7 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
                   : 'Tap a quick reply button below or type a message:'}
               </p>
               <div className="font-mono text-[11px] text-[#54656f] bg-[#f0f2f5] p-2 rounded border border-black/5">
-                1: PRICE • 2: LOTS • 3: RECEIPT
+                1: PRICE • 2: LOTS • 3: RECEIPT • ONION • POTATO
               </div>
               <div className="flex justify-end items-center gap-1 text-[10px] text-[#667781] pt-1">
                 <span>10:00 AM</span>

@@ -172,16 +172,16 @@ export const ChannelsSimulator: React.FC = () => {
 
               <div className="space-y-2 text-xs">
                 <div className="p-3 bg-surface rounded-lg border border-border">
-                  <span className="font-bold text-ink block">Command: 1 or PRICE</span>
-                  <span className="text-ink-muted">Returns today&apos;s mandi vs buyer bids with rule-based advice.</span>
+                  <span className="font-bold text-ink block">Command: 1 or PRICE (or ONION, POTATO, CHILLI)</span>
+                  <span className="text-ink-muted">Returns dynamic mandi vs buyer bids and rule-based advice for any crop.</span>
                 </div>
                 <div className="p-3 bg-surface rounded-lg border border-border">
-                  <span className="font-bold text-ink block">Command: 2 or LOTS</span>
-                  <span className="text-ink-muted">Returns active pod lots, hours elapsed, and buyer matches.</span>
+                  <span className="font-bold text-ink block">Command: 2 or LOTS (or TEMP / COOL POD)</span>
+                  <span className="text-ink-muted">Returns active pod lots, holding hours, and live 11.5°C sensor telemetry.</span>
                 </div>
                 <div className="p-3 bg-surface rounded-lg border border-border">
-                  <span className="font-bold text-ink block">Command: 3 or RECEIPT</span>
-                  <span className="text-ink-muted">Returns transparent rupee waterfall summary with UTR code.</span>
+                  <span className="font-bold text-ink block">Command: 3 or RECEIPT (or ADVANCE / UPI)</span>
+                  <span className="text-ink-muted">Returns transparent rupee waterfall receipt or instant 60% advance terms.</span>
                 </div>
               </div>
             </div>
@@ -245,7 +245,7 @@ export const ChannelsSimulator: React.FC = () => {
               {/* Quick Action Pills & Input */}
               <div className="space-y-2.5 pt-2 border-t border-[#d1d7db]">
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {['PRICE', 'LOTS', 'RECEIPT'].map((cmd) => (
+                  {['PRICE', 'LOTS', 'RECEIPT', 'ONION', 'POTATO', 'ALL CROPS'].map((cmd) => (
                     <button
                       key={cmd}
                       onClick={() => handleWhatsAppSend(cmd)}
