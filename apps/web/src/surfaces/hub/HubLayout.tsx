@@ -3,6 +3,7 @@ import { IntakeWizard } from './IntakeWizard.js';
 import { CoolPodBoard } from './CoolPodBoard.js';
 import { CollectiveLoads } from './CollectiveLoads.js';
 import { PayoutsQueue } from './PayoutsQueue.js';
+import { GradeCRouting } from './GradeCRouting.js';
 import { Badge } from '@farmgate/ui';
 import {
   Scale,
@@ -13,11 +14,12 @@ import {
   RotateCcw,
   FastForward,
   Radio,
+  Recycle,
 } from 'lucide-react';
 import { useDemo } from '../../context/DemoContext.js';
 
 export const HubLayout: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'intake' | 'pod' | 'loads' | 'payouts'>('intake');
+  const [activeTab, setActiveTab] = useState<'intake' | 'pod' | 'loads' | 'payouts' | 'grade_c'>('intake');
   const { clockTime, advanceClock, resetDemo, isSSEConnected, isWarping } = useDemo();
 
   return (
@@ -133,6 +135,18 @@ export const HubLayout: React.FC = () => {
             <CreditCard className="w-4 h-4" />
             <span>Advances & Payouts</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('grade_c')}
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'grade_c'
+                ? 'border-accent text-accent font-bold'
+                : 'border-transparent text-ink-muted hover:text-ink'
+            }`}
+          >
+            <Recycle className="w-4 h-4" />
+            <span>Grade-C Waste-to-Value</span>
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -141,6 +155,7 @@ export const HubLayout: React.FC = () => {
           {activeTab === 'pod' && <CoolPodBoard />}
           {activeTab === 'loads' && <CollectiveLoads />}
           {activeTab === 'payouts' && <PayoutsQueue />}
+          {activeTab === 'grade_c' && <GradeCRouting />}
         </div>
       </div>
     </div>

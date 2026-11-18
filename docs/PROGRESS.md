@@ -65,3 +65,9 @@ Running log of completed tasks across project milestones.
 - [x] M6-T06: Implemented investor & partner briefing lead form.
 - [x] M6-T07: Verified pitch site responsive rendering and captured headless browser screenshots at 1440px and 390px viewports (`docs/shots/`).
 - [x] M6-T08: Reached Gate G2 Review Stop with all P0 deliverables operational.
+- [x] M7-T01: Implemented Buyer Portal (`BuyerPortal`) with graded inventory catalog, instant escrow deposit flow, and live dispatch tracking.
+- [x] M7-T02: Implemented Public QR Traceability Page (`TraceabilityPage`) at `/t/:code` with complete farm-to-fork chronology, farmer fair-share guarantee (45%), and environmental proof.
+- [x] M7-T03: Implemented Standalone Channels Simulator (`ChannelsSimulator`) featuring live WhatsApp message bot and interactive toll-free Voice IVR dialer with Web Speech audio.
+- [x] M7-T04: Implemented Grade-C Waste-to-Value routing in Hub console directing soft/blemished tomatoes to solar dehydration and paste processing at ₹4.50/kg.
+- [x] M7-T05: Implemented Evidence Base & Sources Page (`SourcesPage`) mapping model parameters to Section 4 citations and Group 4 author attribution.
+- [x] M7-T06: Captured and verified screenshots for all P1 surfaces (`docs/shots/buyer-1440.png`, `traceability-390.png`, `channels-1440.png`, `sources-1440.png`).
