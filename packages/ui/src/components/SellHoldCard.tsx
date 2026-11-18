@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, Clock, Volume2, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
+import { TrendingUp, Clock, Volume2, Square, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
 import { Button } from './Button.js';
 import { Badge } from './Badge.js';
 import { formatRupees } from '@farmgate/shared';
@@ -61,13 +61,24 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
         </div>
         {onListen && (
           <Button
-            variant="outline"
+            variant={isListening ? 'primary' : 'outline'}
             size="sm"
-            icon={<Volume2 className={`w-4 h-4 text-accent ${isListening ? 'animate-bounce text-emerald-600' : ''}`} />}
+            icon={
+              isListening ? (
+                <Square className="w-3.5 h-3.5 fill-current text-white" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-accent" />
+              )
+            }
             onClick={onListen}
-            aria-label="Listen to price advice"
+            aria-label={isListening ? 'Stop audio playback' : 'Listen to price advice'}
+            className={
+              isListening
+                ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-sm animate-pulse font-bold'
+                : ''
+            }
           >
-            {isListening ? 'Playing...' : 'Listen'}
+            {isListening ? 'Stop' : 'Listen'}
           </Button>
         )}
       </div>

@@ -6,6 +6,7 @@ import { useReceiptByLot } from '../../api/client';
 import {
   FileText,
   Volume2,
+  Square,
   Printer,
   ShieldCheck,
   ArrowLeft,
@@ -24,14 +25,19 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
   lotId = 'LOT-198',
   onBack,
 }) => {
-  const { lang, t, speak, isSpeaking } = useLanguage();
+  const { lang, t, speak, stopSpeaking, isSpeaking, activeVoiceName } = useLanguage();
   const { activePersona } = useDemo();
   const [selectedLot, setSelectedLot] = useState<string>(lotId);
   const { data: receipt, isLoading } = useReceiptByLot(selectedLot);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Audio readout in chosen language
+  // Audio readout in chosen language (toggleable)
   const handleListen = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+      return;
+    }
+
     const textToSpeak =
       lang === 'hi'
         ? 'आपके टमाटर की बिक्री पर उपभोक्ता ने तीस रुपये प्रति किलो चुकाए। आपको साढ़े तेरह रुपये यानी पैंतालीस प्रतिशत मिले। पारंपरिक मंडी में केवल तैंतीस प्रतिशत मिलता था। हब शुल्क एक रुपया नब्बे पैसे कटने के बाद आपके बैंक खाते में ग्यारह रुपये साठ पैसे प्रति किलो जमा हुए।'
@@ -157,14 +163,39 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant={isSpeaking ? 'primary' : 'outline'}
             size="sm"
             onClick={handleListen}
-            className="flex items-center gap-1.5"
-            aria-label="Listen to receipt breakdown"
+            className={`flex items-center gap-1.5 transition-all ${
+              isSpeaking
+                ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-sm animate-pulse font-bold'
+                : ''
+            }`}
+            aria-label={
+              isSpeaking
+                ? lang === 'hi'
+                  ? 'रोकें'
+                  : lang === 'ta'
+                  ? 'நிறுத்து'
+                  : 'Stop audio breakdown'
+                : lang === 'hi'
+                ? 'सुनें'
+                : lang === 'ta'
+                ? 'கேளுங்கள்'
+                : 'Listen to receipt breakdown'
+            }
           >
-            <Volume2 className="w-3.5 h-3.5 text-accent" />
-            <span className="text-xs">{lang === 'hi' ? 'सुनें' : lang === 'ta' ? 'கேளுங்கள்' : 'Listen'}</span>
+            {isSpeaking ? (
+              <>
+                <Square className="w-3 h-3 fill-current text-white" />
+                <span className="text-xs">{lang === 'hi' ? 'रोकें' : lang === 'ta' ? 'நிறுத்து' : 'Stop'}</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-3.5 h-3.5 text-accent" />
+                <span className="text-xs">{lang === 'hi' ? 'सुनें' : lang === 'ta' ? 'கேளுங்கள்' : 'Listen'}</span>
+              </>
+            )}
           </Button>
 
           <Button
@@ -178,6 +209,34 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Live Audio Dictation Banner */}
+      {isSpeaking && (
+        <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5 flex items-center justify-between text-xs text-rose-800 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="font-semibold">
+              {lang === 'hi'
+                ? 'आवाज़ विवरण जारी है...'
+                : lang === 'ta'
+                ? 'குரல் விளக்கம் இயங்குகிறது...'
+                : 'Audio breakdown playing...'}
+            </span>
+            {activeVoiceName && (
+              <span className="text-[10px] font-mono text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-200 hidden sm:inline">
+                {activeVoiceName}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={stopSpeaking}
+            className="text-xs font-bold text-rose-700 hover:text-rose-950 underline flex items-center gap-1"
+          >
+            <Square className="w-2.5 h-2.5 fill-current" />
+            {lang === 'hi' ? 'रोकें' : lang === 'ta' ? 'நிறுத்து' : 'Stop'}
+          </button>
+        </div>
+      )}
 
       {/* Lot Switcher Selector */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">

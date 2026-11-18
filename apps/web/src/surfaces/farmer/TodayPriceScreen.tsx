@@ -24,7 +24,7 @@ interface TodayPriceScreenProps {
 }
 
 export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateToLots }) => {
-  const { lang, t, speak, isSpeaking } = useLanguage();
+  const { lang, t, speak, stopSpeaking, isSpeaking } = useLanguage();
   const { activePersona } = useDemo();
   const [selectedCrop, setSelectedCrop] = useState<string>('tomato');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -138,6 +138,10 @@ export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateTo
   };
 
   const handleListen = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+      return;
+    }
     if (!priceData) return;
     const textToSpeak =
       lang === 'hi'

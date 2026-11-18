@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Language, getTranslations, TranslationDict } from '@farmgate/shared';
 
 interface LanguageContextType {
@@ -7,11 +7,73 @@ interface LanguageContextType {
   t: TranslationDict;
   speak: (text: string, langOverride?: Language) => void;
   stopSpeaking: () => void;
+  toggleSpeak: (text: string, langOverride?: Language) => void;
   isSpeaking: boolean;
+  activeVoiceName: string | null;
   speechError: string | null;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+/**
+ * Intelligent voice selection algorithm:
+ * Prioritizes high-fidelity Neural, Natural, Online, and regional Indian voices
+ * over metallic desktop/default synthesizers.
+ */
+function selectBestVoice(voices: SpeechSynthesisVoice[], targetLang: Language): SpeechSynthesisVoice | null {
+  if (!voices || voices.length === 0) return null;
+
+  const targetLangCode = targetLang === 'hi' ? 'hi-IN' : targetLang === 'ta' ? 'ta-IN' : 'en-IN';
+  const prefix = targetLang; // 'hi', 'ta', 'en'
+
+  let bestVoice: SpeechSynthesisVoice | null = null;
+  let highestScore = -100;
+
+  for (const voice of voices) {
+    let score = 0;
+    const name = voice.name.toLowerCase();
+    const voiceLang = voice.lang.toLowerCase().replace('_', '-');
+
+    // 1. Language matching
+    if (voiceLang === targetLangCode.toLowerCase()) {
+      score += 120;
+    } else if (voiceLang.startsWith(prefix)) {
+      score += 80;
+    } else if (targetLang !== 'en' && (voiceLang.startsWith('en-in') || voiceLang.startsWith('hi'))) {
+      // Natural Indian English or Hindi fallback if specific regional dialect is not downloaded on OS
+      score += 30;
+    } else if (voiceLang.startsWith('en')) {
+      score += 10;
+    } else {
+      continue; // Skip French, German, Chinese, etc.
+    }
+
+    // 2. High-quality neural / natural voice detection
+    if (name.includes('natural') || name.includes('neural')) score += 70;
+    if (name.includes('online')) score += 50;
+    if (name.includes('wavenet') || name.includes('google')) score += 40;
+    if (name.includes('premium') || name.includes('enhanced')) score += 35;
+
+    // 3. Renowned natural Indian personas
+    // Microsoft Edge online: Neerja, Swara, Madhur, Pallavi, Valluvar
+    if (name.includes('neerja') || name.includes('swara') || name.includes('madhur') || name.includes('pallavi') || name.includes('valluvar')) score += 30;
+    // Windows/Local: Heera, Ravi, Kalpana, Hemant
+    if (name.includes('heera') || name.includes('ravi') || name.includes('kalpana') || name.includes('hemant')) score += 20;
+
+    // 4. Warm natural female intonations (easier to understand over phone speakers)
+    if (name.includes('female') || name.includes('zira') || name.includes('susan') || name.includes('samantha')) score += 10;
+
+    // 5. Heavy penalty for known metallic/robotic desktop synthesizers
+    if (name.includes('desktop') || name.includes('david') || name.includes('espeak')) score -= 40;
+
+    if (score > highestScore) {
+      highestScore = score;
+      bestVoice = voice;
+    }
+  }
+
+  return bestVoice || voices[0] || null;
+}
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Language>(() => {
@@ -20,7 +82,31 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [activeVoiceName, setActiveVoiceName] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Load and cache browser voices on mount and on voiceschanged event
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const updateVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) {
+        setVoices(v);
+      }
+    };
+
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
@@ -33,6 +119,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
+      utteranceRef.current = null;
     }
   }, []);
 
@@ -42,32 +129,71 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
 
+    // Cancel any existing speech
     window.speechSynthesis.cancel();
     setSpeechError(null);
 
     const targetLang = langOverride || lang;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = targetLang === 'hi' ? 'hi-IN' : targetLang === 'ta' ? 'ta-IN' : 'en-IN';
-    utterance.rate = 0.95; // Slightly slower for clarity in rural mobile audio
+    utteranceRef.current = utterance;
 
-    // Check if voice exists for Indian languages
-    const voices = window.speechSynthesis.getVoices();
-    const matchingVoice = voices.find((v) => v.lang.startsWith(utterance.lang) || v.lang.startsWith(targetLang));
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
+    // Natural human voice attributes
+    utterance.lang = targetLang === 'hi' ? 'hi-IN' : targetLang === 'ta' ? 'ta-IN' : 'en-IN';
+    utterance.rate = 0.92; // Slightly relaxed, conversational pacing for high rural comprehension
+    utterance.pitch = 1.02; // Warm, friendly intonation (avoids robotic monotone)
+    utterance.volume = 1.0;
+
+    // Select the best available natural/neural voice
+    const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    const bestVoice = selectBestVoice(currentVoices, targetLang);
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+      setActiveVoiceName(bestVoice.name);
     }
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      utteranceRef.current = null;
+    };
+
     utterance.onerror = (e) => {
       setIsSpeaking(false);
-      if (e.error !== 'canceled') {
+      utteranceRef.current = null;
+      if (e.error !== 'canceled' && e.error !== 'interrupted') {
         setSpeechError(t.common.unsupportedVoice);
       }
     };
 
+    setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
-  }, [lang, t.common.unsupportedVoice]);
+  }, [lang, voices, t.common.unsupportedVoice]);
+
+  // Watchdog interval to detect when browser finishes speaking without onend
+  useEffect(() => {
+    if (!isSpeaking) return;
+
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+          setIsSpeaking(false);
+        }
+      }
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, [isSpeaking]);
+
+  const toggleSpeak = useCallback((text: string, langOverride?: Language) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text, langOverride);
+    }
+  }, [isSpeaking, stopSpeaking, speak]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -86,7 +212,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         t,
         speak,
         stopSpeaking,
+        toggleSpeak,
         isSpeaking,
+        activeVoiceName,
         speechError,
       }}
     >
