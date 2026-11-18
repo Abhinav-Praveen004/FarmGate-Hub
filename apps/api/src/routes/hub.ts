@@ -189,7 +189,14 @@ hubRouter.post('/loads', async (c) => {
     return c.json({ error: 'Order not found' }, 404);
   }
 
-  const selectedLots = db.select().from(schema.lots).all().filter((l) => lotIds.includes(l.id));
+  const allLots = db.select().from(schema.lots).all();
+  const selectedLots = allLots.filter((l) =>
+    lotIds.some((id: string) => {
+      const normalizedId = id.toLowerCase().replace('-', '_');
+      const lotNorm = l.id.toLowerCase().replace('-', '_');
+      return lotNorm === normalizedId || l.lotNumber === Number(id.replace(/\D/g, ''));
+    })
+  );
   const totalWeightGrams = selectedLots.reduce((acc, l) => acc + l.weightGrams, 0);
 
   const loadId = `load_${Date.now()}`;
@@ -229,8 +236,13 @@ hubRouter.post('/loads/:id/confirm', async (c) => {
     .run();
 
   // For each lot: transition to sold, deduct fees, create payout with 24h SLA
+  const allExistingLots = db.select().from(schema.lots).all();
   for (const lId of lotIds) {
-    const lot = db.select().from(schema.lots).where(eq(schema.lots.id, lId)).get();
+    const lot = allExistingLots.find((l) => {
+      const normalizedId = lId.toLowerCase().replace('-', '_');
+      const lotNorm = l.id.toLowerCase().replace('-', '_');
+      return lotNorm === normalizedId || l.lotNumber === Number(lId.replace(/\D/g, ''));
+    });
     if (!lot) continue;
 
     const timeline = JSON.parse(lot.timelineJson);

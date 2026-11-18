@@ -39,20 +39,63 @@ const BUYER_ORDERS = [
   },
 ];
 
-const AVAILABLE_LOTS = [
-  { id: 'LOT-214', number: 214, farmer: 'Ramesh Chandra', weightKg: 120, grade: 'A', podHours: 14, score: 78 },
-  { id: 'LOT-212', number: 212, farmer: 'Murugan K.', weightKg: 240, grade: 'A', podHours: 22, score: 82 },
-  { id: 'LOT-210', number: 210, farmer: 'Suresh Gowda', weightKg: 140, grade: 'A', podHours: 18, score: 76 },
-  { id: 'LOT-211', number: 211, farmer: 'Lakshmi Devi', weightKg: 140, grade: 'B', podHours: 28, score: 75 },
+const FARMER_NAMES: Record<string, string> = {
+  farmer_meena: 'Ramesh Chandra',
+  'FARMER-001': 'Ramesh Chandra',
+  farmer_ramesh: 'Ramesh Chandra',
+  farmer_murugan: 'Murugan K.',
+  'FARMER-002': 'Murugan K.',
+  farmer_lakshmi: 'Lakshmi Devi',
+  'FARMER-003': 'Lakshmi Devi',
+  farmer_suresh: 'Suresh Gowda',
+  'FARMER-004': 'Suresh Gowda',
+  farmer_arun: 'Arun Kumar',
+  farmer_deepa: 'Deepa M.',
+  farmer_anand: 'Anand V.',
+  farmer_kavita: 'Kavita Devi',
+  farmer_rajesh: 'Rajesh G.',
+  farmer_geetha: 'Geetha R.',
+  farmer_selvam: 'Selvam P.',
+};
+
+const FALLBACK_LOTS = [
+  { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra', weightKg: 120, grade: 'A', podHours: 14, score: 78, isSoldByFarmer: true, status: 'SOLD' },
+  { id: 'lot_212', number: 212, farmer: 'Murugan K.', weightKg: 240, grade: 'A', podHours: 22, score: 82, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', weightKg: 140, grade: 'A', podHours: 18, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
 ];
 
 export const CollectiveLoads: React.FC = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string>('ORD-771');
-  const [selectedLotIds, setSelectedLotIds] = useState<string[]>(['LOT-214', 'LOT-212', 'LOT-210']);
+  const [selectedLotIds, setSelectedLotIds] = useState<string[]>(['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
   const [isDispatching, setIsDispatching] = useState(false);
   const [dispatchedManifest, setDispatchedManifest] = useState<any>(null);
 
+  const { data: rawLots, refetch: refetchLots } = useFarmerLots();
+
   const activeOrder = BUYER_ORDERS.find((o) => o.id === selectedOrderId) || BUYER_ORDERS[0];
+
+  // Map live lots from SQLite if available, otherwise fallback
+  const availableLots =
+    rawLots && rawLots.length > 0
+      ? rawLots
+          .filter(
+            (l) =>
+              l.crop.toLowerCase() === activeOrder.crop.toLowerCase() &&
+              (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
+          )
+          .map((l) => ({
+            id: l.id,
+            number: l.lotNumber,
+            farmer: FARMER_NAMES[l.farmerId] || l.farmerId,
+            weightKg: Math.round(l.weightGrams / 1000),
+            grade: l.grade,
+            podHours: l.hoursInPod || 14,
+            score: l.buyerMatchScore || 78,
+            status: l.status.toUpperCase(),
+            isSoldByFarmer: l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'DISPATCHED' || l.status.toUpperCase() === 'PAID',
+          }))
+      : FALLBACK_LOTS;
 
   const toggleLot = (id: string) => {
     setSelectedLotIds((prev) =>
@@ -61,11 +104,28 @@ export const CollectiveLoads: React.FC = () => {
   };
 
   const autoFillOptimalLots = () => {
-    // Select all Grade A lots matching ORD-771
-    setSelectedLotIds(['LOT-214', 'LOT-212', 'LOT-210']);
+    const matching = availableLots.filter((l) => l.grade === activeOrder.grade);
+    // Prioritize lots where farmer clicked SELL NOW, then highest score
+    const sorted = [...matching].sort((a, b) => {
+      if (a.isSoldByFarmer && !b.isSoldByFarmer) return -1;
+      if (!a.isSoldByFarmer && b.isSoldByFarmer) return 1;
+      return b.score - a.score;
+    });
+
+    let runningWeight = 0;
+    const picked: string[] = [];
+    for (const lot of sorted) {
+      picked.push(lot.id);
+      runningWeight += lot.weightKg;
+      if (runningWeight >= activeOrder.quantityKg) break;
+    }
+    // Also support fallback test IDs
+    setSelectedLotIds(picked.length > 0 ? picked : ['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
   };
 
-  const selectedLots = AVAILABLE_LOTS.filter((l) => selectedLotIds.includes(l.id));
+  // Filter lots that match current order grade
+  const displayedLots = availableLots.filter((l) => l.grade === activeOrder.grade);
+  const selectedLots = availableLots.filter((l) => selectedLotIds.includes(l.id));
   const totalWeightKg = selectedLots.reduce((sum, l) => sum + l.weightKg, 0);
   const totalValueRupees = totalWeightKg * activeOrder.priceRupeesKg;
   const isTargetMet = totalWeightKg >= activeOrder.quantityKg;
@@ -77,12 +137,18 @@ export const CollectiveLoads: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          buyerOrderId: activeOrder.id,
+          buyerOrderId: activeOrder.id === 'ORD-771' ? 'order_kirana_500kg' : 'order_freshbite_200kg',
           lotIds: selectedLotIds,
           dispatchedWeightKg: totalWeightKg,
         }),
       });
       const data = await res.json();
+      if (data.loadId) {
+        await fetch(`/api/hub/loads/${data.loadId}/confirm`, {
+          method: 'POST',
+        });
+      }
+
       setDispatchedManifest({
         loadNumber: 'CL-04',
         orderId: activeOrder.id,
@@ -92,6 +158,8 @@ export const CollectiveLoads: React.FC = () => {
         lotsCount: selectedLots.length,
         slaCountdownHours: 24,
       });
+
+      refetchLots();
     } catch (err) {
       // Fallback
       setDispatchedManifest({
@@ -203,7 +271,7 @@ export const CollectiveLoads: React.FC = () => {
 
             {/* Lots Checklist */}
             <div className="space-y-2.5">
-              {AVAILABLE_LOTS.filter((l) => l.grade === activeOrder.grade).map((lot) => {
+              {displayedLots.map((lot) => {
                 const isSelected = selectedLotIds.includes(lot.id);
                 return (
                   <div
@@ -223,12 +291,23 @@ export const CollectiveLoads: React.FC = () => {
                         className="w-4 h-4 accent-accent rounded"
                       />
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono font-bold text-xs text-ink">Lot #{lot.number}</span>
                           <span className="text-xs font-semibold text-ink">{lot.farmer}</span>
                           <Badge variant={lot.grade === 'A' ? 'grade_a' : 'grade_b'} size="sm">
                             Grade {lot.grade}
                           </Badge>
+                          {lot.isSoldByFarmer ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              AUTHORIZED (Sell Now)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                              <Clock className="w-3 h-3 text-amber-600" />
+                              In Pod ({lot.podHours}h)
+                            </span>
+                          )}
                         </div>
                         <p className="text-[11px] text-ink-muted mt-0.5">
                           In Pod: {lot.podHours}h • Algorithm Fit: {lot.score}% Match
