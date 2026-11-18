@@ -402,3 +402,81 @@ hubRouter.post('/payouts/:id/settle', async (c) => {
     transactionId: payResult.transactionId,
   });
 });
+
+// 8. Grade-C Waste-to-Value Routing
+const gradeCState = {
+  inventoryKg: 180,
+  cumulativeDivertedKg: 1420,
+  cumulativeRescuedRupees: 6390,
+  dispatches: [
+    {
+      id: 'GC-BATCH-07',
+      processor: 'Sahyadri Agro Puree & Pulp',
+      product: 'Bulk aseptic tomato paste',
+      weightKg: 240,
+      rateRupeesKg: 4.20,
+      totalRecoveryRupees: 1008,
+      timestamp: 'Today 11:30 AM',
+      status: 'DELIVERED',
+    },
+    {
+      id: 'GC-BATCH-06',
+      processor: 'Kolar Solar Dehydration Co-op',
+      product: 'Sun-dried tomato flakes',
+      weightKg: 150,
+      rateRupeesKg: 4.50,
+      totalRecoveryRupees: 675,
+      timestamp: 'Yesterday 16:45 PM',
+      status: 'DELIVERED',
+    },
+  ],
+};
+
+hubRouter.get('/grade-c', async (c) => {
+  return c.json(gradeCState);
+});
+
+hubRouter.post('/grade-c/route', async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const processor = body.processor || 'Kolar Solar Dehydration Co-op';
+  const product = body.product || 'Sun-dried tomato flakes';
+  const rateRupeesKg = Number(body.rateRupeesKg) || 4.50;
+  const weightKg = Math.min(Number(body.weightKg) || gradeCState.inventoryKg, gradeCState.inventoryKg);
+
+  if (weightKg <= 0) {
+    return c.json({ error: 'No inventory to route' }, 400);
+  }
+
+  const recovery = Math.round(weightKg * rateRupeesKg * 100) / 100;
+  const dispatchId = `GC-BATCH-${String(gradeCState.dispatches.length + 8).padStart(2, '0')}`;
+
+  gradeCState.inventoryKg = Math.max(0, gradeCState.inventoryKg - weightKg);
+  gradeCState.cumulativeDivertedKg += weightKg;
+  gradeCState.cumulativeRescuedRupees += recovery;
+
+  const newDispatch = {
+    id: dispatchId,
+    processor,
+    product,
+    weightKg,
+    rateRupeesKg,
+    totalRecoveryRupees: recovery,
+    timestamp: 'Just now',
+    status: 'IN TRANSIT',
+  };
+
+  gradeCState.dispatches.unshift(newDispatch);
+
+  return c.json({
+    success: true,
+    dispatch: newDispatch,
+    updatedState: gradeCState,
+  });
+});
+
+hubRouter.post('/grade-c/restock', async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const addKg = Number(body.addKg) || 60;
+  gradeCState.inventoryKg += addKg;
+  return c.json({ success: true, inventoryKg: gradeCState.inventoryKg });
+});
