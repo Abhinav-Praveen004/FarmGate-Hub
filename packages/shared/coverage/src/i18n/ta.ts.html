@@ -1,0 +1,346 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/i18n/ta.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/i18n</a> ta.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>85/85</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>85/85</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { TranslationDict } from './en.js';
+&nbsp;
+export const ta: TranslationDict = {
+  common: {
+    tagline: 'அறுவடையும் காப்போம், உரிய விலையும் பெறுவோம்',
+    simulated: 'மாதிரி (Simulated)',
+    demoData: 'டெமோ தரவு',
+    sell: 'விற்பனை செய் (SELL)',
+    hold: 'சேமித்து வை (HOLD)',
+    listen: 'கேட்க',
+    speaking: 'ஆடியோ ஒலிக்கிறது...',
+    unsupportedVoice: 'இந்த மொழிக்கான குரல் இந்த சாதனத்தில் கிடைக்கவில்லை.',
+    advance: 'முன்பணம் கோருக',
+    receipt: 'ரசீது பார்க்க',
+    close: 'மூடுக',
+    confirm: 'உறுதி செய்',
+    cancel: 'ரத்து செய்',
+    hours: 'மணிநேரம்',
+    kg: 'கிலோ',
+    paise: 'பைசா',
+    rupees: '₹',
+  },
+  screens: {
+    todayPrice: 'இன்றைய விலை நிலவரம்',
+    myLots: 'எனது விளைச்சல் (லாட்)',
+    rupeeWaterfall: 'உங்கள் ரூபாய் எங்கே சென்றது?',
+    money: 'வருமானம் மற்றும் முன்பணம்',
+  },
+  todayPrice: {
+    mandiPrice: 'மண்டி விலை',
+    buyerBid: 'சிறந்த கொள்முதல் விலை',
+    floorPrice: 'FPO குறைந்தபட்ச விலை',
+    holdRange: '1 நாள் சேமித்தால் (எதிர்பார்ப்பு)',
+    sellNow: 'இப்போதே விற்க',
+    holdInPod: 'குளிர்பதன அறையில் சேமிக்க',
+    autoSellCheckbox: 'நேரம் முடிந்ததும் சிறந்த விலைக்கு தானாக விற்கவும்',
+    holdDuration: 'சேமிப்பு காலம்',
+  },
+  myLots: {
+    lotTitle: 'லாட் #{{id}}',
+    weight: 'எடை',
+    grade: 'தரம் (Grade)',
+    inPodDuration: 'குளிர்பதன அறையில் நேரம்',
+    buyerMatch: 'வாங்குபவர் பொருத்தம்',
+    qrCode: 'லாட் QR குறியீடு',
+    timeline: {
+      received: 'ஹப்பில் பெறப்பட்டது',
+      graded: 'எடையிட்டு தரம் பிரிக்கப்பட்டது',
+      in_pod: 'குளிர்பதன அறையில் வைக்கப்பட்டது',
+      alert: 'விலை எச்சரிக்கை அனுப்பப்பட்டது',
+      sold: 'கூட்டு விற்பனை உறுதியானது',
+      payout_pending: 'பணம் அனுப்பப்படுகிறது',
+      paid: 'வங்கி/UPI மூலம் பணம் செலுத்தப்பட்டது',
+    },
+  },
+  waterfall: {
+    title: 'உங்கள் ரூபாய் எங்கே சென்றது?',
+    consumerPaid: 'நுகர்வோர் செலுத்திய விலை',
+    transport: 'போக்குவரத்து செலவு',
+    handling: 'கையாளுதல் மற்றும் வீணான இழப்பு',
+    retailMargin: 'சில்லறை மற்றும் இடைத்தரகர் லாபம்',
+    farmerGross: 'விவசாயியின் விற்பனை விலை',
+    hubFee: 'ஃபார்ம்கேட் ஹப் கட்டணம்',
+    farmerNet: 'விவசாயிக்கு கிடைத்த நிகர தொகை',
+    typicalShareMarker: 'ஹப் இல்லாதபோது விவசாயி பங்கு: 33%',
+    ledgerSummary: 'கணக்கு விவரம்',
+    grossSale: 'மொத்த விற்பனை மதிப்பு',
+    feesDeducted: 'ஹப் கட்டணம் பிடித்தம் (₹1.50/கிலோ + 3%)',
+    advanceRecovered: 'பெற்ற முன்பணம் பிடித்தம்',
+    netTransferred: 'UPI மூலம் அனுப்பப்பட்ட நிகர பணம்',
+  },
+  money: {
+    title: 'வருவாய் மற்றும் முன்பணம்',
+    payoutSlaClock: '24 மணி நேரத்திற்குள் பணம் செலுத்தும் நேரம்',
+    dueIn: 'மீதமுள்ள நேரம்',
+    statusPaid: '24 மணி நேரத்திற்குள் UPI மூலம் செலுத்தப்பட்டது',
+    statusPending: 'கூட்டு விற்பனை முடிவுக்கு காத்திருக்கிறது',
+    requestAdvanceTitle: 'விற்பனைக்கு முன்பே பணம் தேவையா?',
+    advanceDescription: 'உங்கள் விளைச்சலின் மதிப்பிலிருந்து 50% முதல் 70% வரை உடனடி முன்பணம் பெறுங்கள். விற்பனையின் போது கழித்துக்கொள்ளப்படும்.',
+    requestedAdvance: 'முன்பணத் தொகை',
+    submitAdvance: 'உடனடி முன்பணம் கோருக',
+  },
+  channels: {
+    whatsappHeader: 'ஃபார்ம்கேட் ஹப் எச்சரிக்கைகள் (Simulated)',
+    typeCommandHint: 'PRICE, LOTS, அல்லது RECEIPT என தட்டச்சு செய்யவும்',
+  },
+};
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-11-18T06:38:57.249Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    
