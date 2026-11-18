@@ -165,37 +165,37 @@ async function startUnifiedServer() {
         <span class="port-link">http://localhost:4000</span>
       </a>
       <a class="card" href="http://localhost:5173/farmer" target="_blank">
-        <span class="badge">P0 • PORT 5173</span>
+        <span class="badge">PORT 5173</span>
         <div class="title">Mobile Farmer App →</div>
         <div class="desc">Screens 1-4 (Today's Price, Lots, Rupee Waterfall, Money) + WhatsApp drawer.</div>
         <span class="port-link">http://localhost:5173/farmer</span>
       </a>
       <a class="card" href="http://localhost:5173/hub" target="_blank">
-        <span class="badge">P0 • PORT 5173</span>
+        <span class="badge">PORT 5173</span>
         <div class="title">Hub Operator Console →</div>
         <div class="desc">Digital scale capture, 10-Tonne Cool Pod telemetry, collective load builder, payouts.</div>
         <span class="port-link">http://localhost:5173/hub</span>
       </a>
       <a class="card" href="http://localhost:5173/impact" target="_blank">
-        <span class="badge">P0 • PORT 5173</span>
+        <span class="badge">PORT 5173</span>
         <div class="title">Impact & Investor Dashboard →</div>
         <div class="desc">5 core KPIs, per-tonne economics (+27.2%), 4-year cohort model, sensitivity sliders.</div>
         <span class="port-link">http://localhost:5173/impact</span>
       </a>
       <a class="card" href="http://localhost:5173/buyer" target="_blank">
-        <span class="badge" style="background: #d97706;">P1 • PORT 5173</span>
+        <span class="badge" style="background: #d97706;">PORT 5173</span>
         <div class="title">Buyer Wholesale Portal →</div>
         <div class="desc">Graded wholesale catalog, 100% escrow lock, live cold-chain dispatch tracking.</div>
         <span class="port-link">http://localhost:5173/buyer</span>
       </a>
       <a class="card" href="http://localhost:5173/t/LOT-214" target="_blank">
-        <span class="badge" style="background: #059669;">P1 • PORT 5173</span>
+        <span class="badge" style="background: #059669;">PORT 5173</span>
         <div class="title">Public Traceability Certificate →</div>
         <div class="desc">Provenance audit trail, farmer 45% fair share proof, 73% lower waste guarantee.</div>
         <span class="port-link">http://localhost:5173/t/LOT-214</span>
       </a>
       <a class="card" href="http://localhost:5173/channels" target="_blank">
-        <span class="badge" style="background: #475569;">P1 • PORT 5173</span>
+        <span class="badge" style="background: #475569;">PORT 5173</span>
         <div class="title">Channels Simulator (WhatsApp / IVR) →</div>
         <div class="desc">Interactive 2-way WhatsApp Business bot and toll-free voice keypad with Web Speech.</div>
         <span class="port-link">http://localhost:5173/channels</span>

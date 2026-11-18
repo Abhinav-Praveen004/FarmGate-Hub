@@ -43,31 +43,31 @@ export const App: React.FC = () => {
                     to="/farmer"
                     className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
                   >
-                    Farmer (P0)
+                    Farmer App
                   </Link>
                   <Link
                     to="/hub"
                     className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
                   >
-                    Hub Console (P0)
+                    Hub Console
                   </Link>
                   <Link
                     to="/buyer"
                     className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
                   >
-                    Buyer Portal (P1)
+                    Buyer Portal
                   </Link>
                   <Link
                     to="/t/FGH-ANNUR-2026-LOT214"
                     className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
                   >
-                    QR Traceability (P1)
+                    QR Traceability
                   </Link>
                   <Link
                     to="/channels"
                     className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
                   >
-                    Channels / IVR (P1)
+                    Channels / IVR
                   </Link>
                   <Link
                     to="/impact"

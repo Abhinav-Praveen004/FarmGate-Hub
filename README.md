@@ -39,13 +39,13 @@ Once started, all surfaces are live on their dedicated local ports:
 | :--- | :--- | :--- | :--- |
 | **Launch Gateway** | [`http://localhost:8080`](http://localhost:8080) | One-click directory to all surfaces | Developers & Judges |
 | **Investor Pitch Site** | [`http://localhost:4000`](http://localhost:4000) | Public pitch site built with anti-slop guidelines (`design-taste-frontend`) | Investors & Evaluators |
-| **Farmer Mobile App (P0)** | [`http://localhost:5173/farmer`](http://localhost:5173/farmer) | Screens 1–4 (Price, Lots, Rupee Waterfall, Money) + WhatsApp drawer in EN / HI / TA | Smallholder Farmers |
-| **Hub Operator Console (P0)** | [`http://localhost:5173/hub`](http://localhost:5173/hub) | Digital scale capture, 10T Cool Pod telemetry, Collective load aggregator, 24h SLA payouts | Village Hub Lead |
-| **Impact Dashboard (P0)** | [`http://localhost:5173/impact`](http://localhost:5173/impact) | 5 KPI scorecards, Per-Tonne calculator (+27.2%), 4-Year cohort model, ₹5 Cr ask | Investors & FPOs |
-| **Buyer Portal (P1)** | [`http://localhost:5173/buyer`](http://localhost:5173/buyer) | Graded catalog (Grade A/B/C), 100% escrow lock, live cold-chain dispatch tracker | Wholesale Buyers & Kiranas |
-| **QR Traceability (P1)** | [`http://localhost:5173/t/LOT-214`](http://localhost:5173/t/LOT-214) | Farm-to-fork chronology, farmer 45% share proof, 73% lower waste guarantee | Retail Consumers |
-| **Channels Simulator (P1)** | [`http://localhost:5173/channels`](http://localhost:5173/channels) | Interactive WhatsApp Business chat bot & 12-key toll-free IVR phone dialer | Non-Smartphone Users |
-| **Evidence Sources (P1)** | [`http://localhost:5173/sources`](http://localhost:5173/sources) | Group 4 credits, Section 4 citations, empirical benchmark cross-references | Academics & Analysts |
+| **Farmer Mobile App** | [`http://localhost:5173/farmer`](http://localhost:5173/farmer) | Screens 1–4 (Price, Lots, Rupee Waterfall, Money) + WhatsApp drawer in EN / HI / TA | Smallholder Farmers |
+| **Hub Operator Console** | [`http://localhost:5173/hub`](http://localhost:5173/hub) | Digital scale capture, 10T Cool Pod telemetry, Collective load aggregator, 24h SLA payouts | Village Hub Lead |
+| **Impact Dashboard** | [`http://localhost:5173/impact`](http://localhost:5173/impact) | 5 KPI scorecards, Per-Tonne calculator (+27.2%), 4-Year cohort model, ₹5 Cr ask | Investors & FPOs |
+| **Buyer Portal** | [`http://localhost:5173/buyer`](http://localhost:5173/buyer) | Graded catalog (Grade A/B/C), 100% escrow lock, live cold-chain dispatch tracker | Wholesale Buyers & Kiranas |
+| **QR Traceability** | [`http://localhost:5173/t/LOT-214`](http://localhost:5173/t/LOT-214) | Farm-to-fork chronology, farmer 45% share proof, 73% lower waste guarantee | Retail Consumers |
+| **Channels Simulator** | [`http://localhost:5173/channels`](http://localhost:5173/channels) | Interactive WhatsApp Business chat bot & 12-key toll-free IVR phone dialer | Non-Smartphone Users |
+| **Evidence Sources** | [`http://localhost:5173/sources`](http://localhost:5173/sources) | Group 4 credits, Section 4 citations, empirical benchmark cross-references | Academics & Analysts |
 | **API Backend & SSE** | [`http://localhost:8787`](http://localhost:8787) | Hono REST API, SQLite Drizzle ORM, real-time SSE stream (`/api/events`) | System Integration |
 
 ---
@@ -58,13 +58,13 @@ farmgate-hub/
 │   ├── api/          # Hono backend + Drizzle ORM + SQLite + Hardware Adapters (Port 8787)
 │   ├── web/          # React 19 + Vite 8 + Tailwind CSS + React Router 7 (Port 5173)
 │   │   └── src/surfaces/
-│   │       ├── farmer/        # Mobile farmer app (P0)
-│   │       ├── hub/           # Hub operator console (P0)
-│   │       ├── impact/        # Impact & investor dashboard (P0)
-│   │       ├── buyer/         # Buyer catalog & escrow portal (P1)
-│   │       ├── traceability/  # Consumer public provenance certificate (P1)
-│   │       ├── channels/      # WhatsApp bot & IVR telephone simulator (P1)
-│   │       └── sources/       # Evidence base & report citation mapping (P1)
+│   │       ├── farmer/        # Mobile farmer app
+│   │       ├── hub/           # Hub operator console
+│   │       ├── impact/        # Impact & investor dashboard
+│   │       ├── buyer/         # Buyer catalog & escrow portal
+│   │       ├── traceability/  # Consumer public provenance certificate
+│   │       ├── channels/      # WhatsApp bot & IVR telephone simulator
+│   │       └── sources/       # Evidence base & report citation mapping
 │   └── site/         # Investor pitch static site (Port 4000, design-taste-frontend v2.5.1)
 ├── packages/
 │   ├── shared/       # Domain types, finance engine, evidence data, i18n dictionaries
