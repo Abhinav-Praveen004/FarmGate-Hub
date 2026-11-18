@@ -52,7 +52,7 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/50 animate-fadeIn">
-      <div className="bg-[#e5ddd5] dark:bg-zinc-900 w-full max-w-md h-full flex flex-col shadow-2xl border-l border-border animate-slideLeft">
+      <div className="bg-[#efeae2] w-full max-w-md h-full flex flex-col shadow-2xl border-l border-[#d1d7db] animate-slideLeft">
         {/* WhatsApp Header */}
         <div className="bg-[#075e54] text-white p-3.5 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2.5">
@@ -64,7 +64,7 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm">FarmGate Hub Bot</span>
+                <span className="font-bold text-sm text-white">FarmGate Hub Bot</span>
                 <ShieldCheck className="w-3.5 h-3.5 text-green-300" />
               </div>
               <span className="text-[11px] text-green-100 flex items-center gap-1">
@@ -85,25 +85,25 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
         <div className="flex-1 p-4 overflow-y-auto space-y-3">
           {/* Welcome Message */}
           <div className="flex justify-start">
-            <div className="bg-white dark:bg-zinc-800 text-ink rounded-lg rounded-tl-none p-3 shadow-sm max-w-[85%] text-xs space-y-2 border border-border/50">
-              <p className="font-bold text-[#075e54] dark:text-green-400">
+            <div className="bg-white text-[#111b21] rounded-lg rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-xs space-y-2 border border-black/5">
+              <p className="font-bold text-[#075e54]">
                 {lang === 'hi'
                   ? `नमस्ते ${activePersona.name} जी! फार्मगेट हब में आपका स्वागत है।`
                   : lang === 'ta'
                   ? `வணக்கம் ${activePersona.name}! ஃபார்ம்கேட் ஹப்பிற்கு வரவேற்கிறோம்.`
                   : `Namaste ${activePersona.name}! Welcome to FarmGate Hub Alerts.`}
               </p>
-              <p>
+              <p className="text-[#111b21] leading-relaxed">
                 {lang === 'hi'
                   ? 'तुरंत जानकारी के लिए नीचे दिए गए बटन दबाएं या लिखें:'
                   : lang === 'ta'
                   ? 'உடனடி தகவலுக்கு கீழே உள்ள பொத்தான்களை அழுத்தவும்:'
                   : 'Tap a quick reply button below or type a message:'}
               </p>
-              <div className="font-mono text-[11px] text-ink-muted">
+              <div className="font-mono text-[11px] text-[#54656f] bg-[#f0f2f5] p-2 rounded border border-black/5">
                 1: PRICE • 2: LOTS • 3: RECEIPT
               </div>
-              <div className="flex justify-end items-center gap-1 text-[10px] text-ink-muted pt-1">
+              <div className="flex justify-end items-center gap-1 text-[10px] text-[#667781] pt-1">
                 <span>10:00 AM</span>
                 <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
               </div>
@@ -121,12 +121,12 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
                 <div
                   className={`rounded-lg p-3 shadow-sm max-w-[85%] text-xs space-y-1 ${
                     isFarmer
-                      ? 'bg-[#dcf8c6] dark:bg-emerald-950 text-ink rounded-tr-none'
-                      : 'bg-white dark:bg-zinc-800 text-ink rounded-tl-none border border-border/50'
+                      ? 'bg-[#d9fdd3] text-[#111b21] rounded-tr-none'
+                      : 'bg-white text-[#111b21] rounded-tl-none border border-black/5'
                   }`}
                 >
-                  <p className="whitespace-pre-line leading-relaxed">{msg.body}</p>
-                  <div className="flex justify-end items-center gap-1 text-[10px] text-ink-muted pt-0.5">
+                  <p className="whitespace-pre-line leading-relaxed text-[#111b21]">{msg.body}</p>
+                  <div className="flex justify-end items-center gap-1 text-[10px] text-[#667781] pt-0.5">
                     <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     {isFarmer && <CheckCheck className="w-3.5 h-3.5 text-blue-500" />}
                   </div>
@@ -139,13 +139,13 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
         </div>
 
         {/* Quick Reply Pills */}
-        <div className="p-2 bg-surface/80 border-t border-border flex gap-2 overflow-x-auto scrollbar-none">
+        <div className="p-2.5 bg-[#f0f2f5] border-t border-[#d1d7db] flex gap-2 overflow-x-auto scrollbar-none">
           {quickReplies.map((qr) => (
             <button
               key={qr.command}
               onClick={() => handleSend(qr.command)}
               disabled={sendMessage.isPending}
-              className="px-3 py-1.5 bg-surface-elevated hover:bg-surface border border-border text-ink text-xs font-semibold rounded-full shrink-0 shadow-sm transition-all active:scale-95"
+              className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 border border-[#075e54]/30 text-[#075e54] text-xs font-semibold rounded-full shrink-0 shadow-xs transition-all active:scale-95"
             >
               {qr.label}
             </button>
@@ -153,7 +153,7 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
         </div>
 
         {/* Chat Input */}
-        <div className="p-3 bg-surface-elevated border-t border-border flex items-center gap-2">
+        <div className="p-3 bg-[#f0f2f5] border-t border-[#d1d7db] flex items-center gap-2">
           <input
             type="text"
             placeholder={t.channels.typeCommandHint}
@@ -162,12 +162,12 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSend();
             }}
-            className="flex-1 bg-surface border border-border rounded-full px-4 py-2.5 text-xs text-ink focus:outline-none focus:ring-1 focus:ring-accent"
+            className="flex-1 bg-white border border-[#d1d7db] rounded-full px-4 py-2.5 text-xs text-[#111b21] placeholder-[#667781] focus:outline-none focus:ring-1 focus:ring-[#075e54]"
           />
           <button
             onClick={() => handleSend()}
             disabled={sendMessage.isPending || !inputText.trim()}
-            className="w-10 h-10 rounded-full bg-[#075e54] text-white flex items-center justify-center hover:bg-[#064e45] transition-colors disabled:opacity-50"
+            className="w-10 h-10 rounded-full bg-[#075e54] text-white flex items-center justify-center hover:bg-[#128c7e] transition-colors disabled:opacity-50 shadow-xs"
           >
             <Send className="w-4 h-4" />
           </button>

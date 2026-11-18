@@ -181,32 +181,32 @@ export const ChannelsSimulator: React.FC = () => {
             </div>
 
             {/* WhatsApp Phone Mockup Pane (7 cols) */}
-            <div className="lg:col-span-7 bg-[#e5ddd5] dark:bg-zinc-900 border border-border rounded-2xl p-4 shadow-md space-y-3 min-h-[500px] flex flex-col justify-between">
-              <div className="bg-[#075e54] text-white p-3 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+            <div className="lg:col-span-7 bg-[#efeae2] border border-[#d1d7db] rounded-2xl p-4 shadow-md space-y-3 min-h-[500px] flex flex-col justify-between">
+              <div className="bg-[#075e54] text-white p-3 rounded-xl flex items-center justify-between shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs text-white">
                     FH
                   </div>
                   <div>
-                    <span className="font-bold text-xs">FarmGate Hub Alerts</span>
-                    <span className="text-[10px] text-green-200 block">Verified Official Business Bot</span>
+                    <span className="font-bold text-xs text-white">FarmGate Hub Alerts</span>
+                    <span className="text-[10px] text-emerald-100 block">Verified Official Business Bot</span>
                   </div>
                 </div>
                 <Badge variant="simulated">SIM</Badge>
               </div>
 
               {/* Chat Messages */}
-              <div className="space-y-2 flex-1 overflow-y-auto max-h-[360px] p-2 text-xs">
-                <div className="bg-white dark:bg-zinc-800 text-ink p-3 rounded-lg max-w-[85%] shadow-xs space-y-1">
+              <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[360px] p-2 text-xs">
+                <div className="bg-white text-[#111b21] p-3 rounded-lg rounded-tl-none max-w-[85%] shadow-sm space-y-1 border border-black/5">
                   <p className="font-bold text-[#075e54]">FarmGate Hub Automated Alert:</p>
-                  <p>
+                  <p className="text-[#111b21] leading-relaxed">
                     {lang === 'hi'
                       ? `नमस्ते ${activePersona.name} जी! आपका टमाटर लॉट #214 कूल पॉड में सुरक्षित है।`
                       : lang === 'ta'
                       ? `வணக்கம் ${activePersona.name}! உங்கள் தக்காளி லாட் #214 கூல் பாலில் பாதுகாப்பாக உள்ளது.`
                       : `Namaste ${activePersona.name}! Your Lot #214 is safe in Cool Pod #01 (11.5°C).`}
                   </p>
-                  <span className="text-[10px] text-ink-muted block text-right">10:00 AM • ✓✓</span>
+                  <span className="text-[10px] text-[#667781] block text-right">10:00 AM • ✓✓</span>
                 </div>
 
                 {whatsappMessages?.map((msg) => (
@@ -215,33 +215,36 @@ export const ChannelsSimulator: React.FC = () => {
                     className={`flex ${msg.sender === 'FARMER' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`p-3 rounded-lg max-w-[85%] shadow-xs text-xs whitespace-pre-line ${
+                      className={`p-3 rounded-lg shadow-sm max-w-[85%] text-xs whitespace-pre-line leading-relaxed ${
                         msg.sender === 'FARMER'
-                          ? 'bg-[#dcf8c6] dark:bg-emerald-950 text-ink'
-                          : 'bg-white dark:bg-zinc-800 text-ink'
+                          ? 'bg-[#d9fdd3] text-[#111b21] rounded-tr-none'
+                          : 'bg-white text-[#111b21] rounded-tl-none border border-black/5'
                       }`}
                     >
-                      {msg.body}
+                      <p className="text-[#111b21]">{msg.body}</p>
+                      <span className="text-[10px] text-[#667781] block text-right mt-1">
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ✓✓
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Quick Action Pills & Input */}
-              <div className="space-y-2 pt-2 border-t border-black/10">
+              <div className="space-y-2.5 pt-2 border-t border-[#d1d7db]">
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {['PRICE', 'LOTS', 'RECEIPT'].map((cmd) => (
                     <button
                       key={cmd}
                       onClick={() => handleWhatsAppSend(cmd)}
-                      className="px-3 py-1 bg-white hover:bg-zinc-100 rounded-full text-xs font-semibold text-ink border border-border shadow-xs shrink-0"
+                      className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 rounded-full text-xs font-semibold text-[#075e54] border border-[#075e54]/30 shadow-xs shrink-0 transition-colors"
                     >
                       {cmd}
                     </button>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 bg-[#f0f2f5] p-1.5 rounded-xl border border-[#d1d7db]">
                   <input
                     type="text"
                     aria-label="Type a WhatsApp message"
@@ -249,12 +252,12 @@ export const ChannelsSimulator: React.FC = () => {
                     value={whatsappInput}
                     onChange={(e) => setWhatsappInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleWhatsAppSend()}
-                    className="flex-1 bg-white border border-border rounded-full px-4 py-2 text-xs text-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="flex-1 bg-white text-[#111b21] placeholder-[#667781] border border-[#d1d7db] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#075e54]"
                   />
                   <button
                     onClick={() => handleWhatsAppSend()}
                     aria-label="Send WhatsApp message"
-                    className="w-9 h-9 rounded-full bg-[#075e54] text-white flex items-center justify-center hover:bg-[#064e45]"
+                    className="p-2 bg-[#075e54] hover:bg-[#128c7e] text-white rounded-lg transition-colors shadow-xs"
                   >
                     <Send className="w-4 h-4" />
                   </button>
