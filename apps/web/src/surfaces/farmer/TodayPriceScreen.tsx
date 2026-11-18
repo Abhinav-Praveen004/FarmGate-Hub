@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useDemo } from '../../context/DemoContext';
 import { useTodayPrice, useFarmerLots, useMakeLotDecision } from '../../api/client';
 import { CheckCircle2, Sparkles, TrendingUp, Info, ShieldCheck, X } from 'lucide-react';
+import { Language } from '@farmgate/shared';
 
 const CROPS = [
   { id: 'tomato', emoji: '🍅', en: 'Tomato', hi: 'टमाटर', ta: 'தக்காளி' },
@@ -137,18 +138,89 @@ export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateTo
     }
   };
 
+  // Fully localized advice sentence for UI card and audio dictation
+  const getLocalizedAdvice = (
+    action: 'SELL' | 'HOLD' | 'CLOSE_CALL',
+    buyerBid: number,
+    floorPrice: number,
+    forecastLow: number,
+    forecastHigh: number,
+    language: Language
+  ) => {
+    if (action === 'HOLD') {
+      if (language === 'hi') {
+        return `सलाह: कूल पॉड में 1 दिन रखें। कल दोपहर ₹${forecastLow}–₹${forecastHigh}/किग्रा पर मांग सबसे अधिक होगी।`;
+      }
+      if (language === 'ta') {
+        return `பரிந்துரை: கூல் பாலில் 1 நாள் வைக்கவும். நாளை மதியம் ₹${forecastLow}–₹${forecastHigh}/கிலோ வரை தேவை அதிகரிக்கும்.`;
+      }
+      return `Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ₹${forecastLow}–₹${forecastHigh}/kg.`;
+    }
+
+    if (action === 'SELL') {
+      if (language === 'hi') {
+        return `सलाह: अभी बेचें। ₹${buyerBid}/किग्रा की खरीदार बोली गारंटीकृत न्यूनतम भाव (₹${floorPrice}/किग्रा) से अधिक है।`;
+      }
+      if (language === 'ta') {
+        return `பரிந்துரை: உடனே விற்கவும். ₹${buyerBid}/கிலோ வாங்குபவர் விலை உத்தரவாத விலையான ₹${floorPrice}/கிலோவை விட அதிகம்.`;
+      }
+      return `Buyer bid of ₹${buyerBid}/kg is above the FPO floor (₹${floorPrice}/kg) and matches strong 24h market outlook. Recommend selling now.`;
+    }
+
+    // CLOSE_CALL
+    if (language === 'hi') {
+      return `सलाह: सावधानी से निर्णय लें। बाजार भाव थ्रेशोल्ड के करीब है। बेचने या रखने से पहले अपनी नकदी आवश्यकता देखें।`;
+    }
+    if (language === 'ta') {
+      return `பரிந்துரை: சந்தை விலை வரம்பிற்கு அருகில் உள்ளது. பணத் தேவையை கொண்டு முடிவு செய்யவும்.`;
+    }
+    return `This is a close call. Market bids are close to the holding threshold. Consider your cash needs before deciding to sell today or hold.`;
+  };
+
   const handleListen = () => {
     if (isSpeaking) {
       stopSpeaking();
       return;
     }
     if (!priceData) return;
+
+    const action = priceData.recommendedAction || 'HOLD';
+    const bBid = priceData.buyerBidRupees;
+    const fFloor = priceData.floorPriceRupees;
+    const fLow = priceData.forecastLowRupees;
+    const fHigh = priceData.forecastHighRupees;
+
+    let spokenAdvice = '';
+    if (action === 'HOLD') {
+      spokenAdvice =
+        lang === 'hi'
+          ? `सलाह: कूल पॉड में एक दिन रखें। कल दोपहर ${fLow} से ${fHigh} रुपये प्रति किलो तक मांग और भाव बढ़ने का अनुमान है।`
+          : lang === 'ta'
+          ? `பரிந்துரை: கூல் பாலில் ஒரு நாள் வைக்கவும். நாளை மதியம் ${fLow} முதல் ${fHigh} ரூபாய் வரை விலை அதிகரிக்கும் என எதிர்பார்க்கப்படுகிறது.`
+          : `Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ${fLow} to ${fHigh} rupees per kilogram.`;
+    } else if (action === 'SELL') {
+      spokenAdvice =
+        lang === 'hi'
+          ? `सलाह: अभी बेचें। ${bBid} रुपये प्रति किलो की खरीदार बोली न्यूनतम गारंटी भाव ${fFloor} रुपये से अधिक है।`
+          : lang === 'ta'
+          ? `பரிந்துரை: உடனே விற்கவும். ${bBid} ரூபாய் வாங்குபவர் விலை உத்தரவாத விலையான ${fFloor} ரூபாயை விட அதிகமாக உள்ளது.`
+          : `Buyer bid of ${bBid} rupees per kilogram is above the floor. Recommend selling now.`;
+    } else {
+      spokenAdvice =
+        lang === 'hi'
+          ? `सलाह: सावधानी से निर्णय लें। बाजार भाव थ्रेशोल्ड के करीब है।`
+          : lang === 'ta'
+          ? `பரிந்துரை: சந்தை விலை வரம்பிற்கு அருகில் உள்ளது. பணத் தேவையை கொண்டு முடிவு செய்யவும்.`
+          : `This is a close call. Consider your cash needs before deciding to sell or hold.`;
+    }
+
     const textToSpeak =
       lang === 'hi'
-        ? `${currentCropSimple} का आज का मंडी भाव ₹${priceData.mandiPriceRupees} प्रति किलो है। सत्यापित खरीदार बोली ₹${priceData.buyerBidRupees} प्रति किलो है। ${priceData.adviceSentence}`
+        ? `${currentCropSimple} का आज का मंडी भाव ${priceData.mandiPriceRupees} रुपये प्रति किलो है। सत्यापित खरीदार बोली ${priceData.buyerBidRupees} रुपये प्रति किलो है। ${spokenAdvice}`
         : lang === 'ta'
-        ? `இன்றைய ${currentCropSimple} மண்டி விலை கிலோவுக்கு ₹${priceData.mandiPriceRupees}. சரிபார்க்கப்பட்ட வாங்குபவர் விலை ₹${priceData.buyerBidRupees}. ${priceData.adviceSentence}`
-        : `Today's ${currentCropSimple} mandi price is ₹${priceData.mandiPriceRupees} per kilogram. Best verified buyer bid is ₹${priceData.buyerBidRupees}. ${priceData.adviceSentence}`;
+        ? `இன்றைய ${currentCropSimple} மண்டி விலை ஒரு கிலோவுக்கு ${priceData.mandiPriceRupees} ரூபாய். சரிபார்க்கப்பட்ட வாங்குபவர் விலை ${priceData.buyerBidRupees} ரூபாய். ${spokenAdvice}`
+        : `Today's ${currentCropSimple} mandi price is ₹${priceData.mandiPriceRupees} per kilogram. Best verified buyer bid is ₹${priceData.buyerBidRupees}. ${spokenAdvice}`;
+
     speak(textToSpeak, lang);
   };
 
@@ -237,12 +309,24 @@ export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateTo
           forecastLowRupees={priceData?.forecastLowRupees || 13.0}
           forecastHighRupees={priceData?.forecastHighRupees || 15.0}
           adviceSentence={
-            priceData?.adviceSentence ||
-            (lang === 'hi'
-              ? `कूल पॉड में 1 दिन रखें: कल दोपहर में ₹${priceData?.forecastLowRupees || 13}-${priceData?.forecastHighRupees || 15}/किग्रा पर मांग सबसे अधिक होगी।`
-              : lang === 'ta'
-              ? `கூல் பாலில் 1 நாள் வைக்கவும்: நாளை மதியம் ₹${priceData?.forecastLowRupees || 13}-${priceData?.forecastHighRupees || 15}/கிலோ வரை தேவை அதிகரிக்கும்.`
-              : `Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ₹${priceData?.forecastLowRupees || 13}–${priceData?.forecastHighRupees || 15}/kg.`)
+            lang === 'en'
+              ? priceData?.adviceSentence ||
+                getLocalizedAdvice(
+                  priceData?.recommendedAction || 'HOLD',
+                  priceData?.buyerBidRupees || 14.0,
+                  priceData?.floorPriceRupees || 11.0,
+                  priceData?.forecastLowRupees || 13.0,
+                  priceData?.forecastHighRupees || 15.0,
+                  'en'
+                )
+              : getLocalizedAdvice(
+                  priceData?.recommendedAction || 'HOLD',
+                  priceData?.buyerBidRupees || 14.0,
+                  priceData?.floorPriceRupees || 11.0,
+                  priceData?.forecastLowRupees || 13.0,
+                  priceData?.forecastHighRupees || 15.0,
+                  lang
+                )
           }
           recommendedAction={priceData?.recommendedAction || 'HOLD'}
           remainingHoldHours={podLot ? 58 : 72}

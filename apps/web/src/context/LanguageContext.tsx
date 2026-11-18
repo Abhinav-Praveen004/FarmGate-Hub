@@ -34,18 +34,13 @@ function selectBestVoice(voices: SpeechSynthesisVoice[], targetLang: Language): 
     const name = voice.name.toLowerCase();
     const voiceLang = voice.lang.toLowerCase().replace('_', '-');
 
-    // 1. Language matching
+    // 1. Strict language matching - NEVER assign an English voice to Hindi or Tamil text
     if (voiceLang === targetLangCode.toLowerCase()) {
-      score += 120;
+      score += 150;
     } else if (voiceLang.startsWith(prefix)) {
-      score += 80;
-    } else if (targetLang !== 'en' && (voiceLang.startsWith('en-in') || voiceLang.startsWith('hi'))) {
-      // Natural Indian English or Hindi fallback if specific regional dialect is not downloaded on OS
-      score += 30;
-    } else if (voiceLang.startsWith('en')) {
-      score += 10;
+      score += 100;
     } else {
-      continue; // Skip French, German, Chinese, etc.
+      continue; // Skip any voice that does not belong to this language family
     }
 
     // 2. High-quality neural / natural voice detection
@@ -72,7 +67,7 @@ function selectBestVoice(voices: SpeechSynthesisVoice[], targetLang: Language): 
     }
   }
 
-  return bestVoice || voices[0] || null;
+  return bestVoice;
 }
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -143,12 +138,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     utterance.pitch = 1.02; // Warm, friendly intonation (avoids robotic monotone)
     utterance.volume = 1.0;
 
-    // Select the best available natural/neural voice
+    // Select the best available natural/neural voice matching the language family
     const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
     const bestVoice = selectBestVoice(currentVoices, targetLang);
     if (bestVoice) {
       utterance.voice = bestVoice;
       setActiveVoiceName(bestVoice.name);
+    } else {
+      setActiveVoiceName(targetLang === 'hi' ? 'Hindi Natural' : targetLang === 'ta' ? 'Tamil Natural' : 'English Natural');
     }
 
     utterance.onstart = () => {

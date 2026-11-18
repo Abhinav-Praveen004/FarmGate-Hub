@@ -31,19 +31,35 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
   const { data: receipt, isLoading } = useReceiptByLot(selectedLot);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Audio readout in chosen language (toggleable)
+  // Dynamic lot configuration
+  const isLot198 = selectedLot === 'LOT-198';
+  const isLot210 = selectedLot === 'LOT-210';
+  const isLot214 = selectedLot === 'LOT-214';
+
+  // Audio readout in chosen language (toggleable, 100% localized)
   const handleListen = () => {
     if (isSpeaking) {
       stopSpeaking();
       return;
     }
 
-    const textToSpeak =
-      lang === 'hi'
-        ? 'आपके टमाटर की बिक्री पर उपभोक्ता ने तीस रुपये प्रति किलो चुकाए। आपको साढ़े तेरह रुपये यानी पैंतालीस प्रतिशत मिले। पारंपरिक मंडी में केवल तैंतीस प्रतिशत मिलता था। हब शुल्क एक रुपया नब्बे पैसे कटने के बाद आपके बैंक खाते में ग्यारह रुपये साठ पैसे प्रति किलो जमा हुए।'
+    const textToSpeak = isLot210
+      ? lang === 'hi'
+        ? 'आपके देसी टमाटर की बिक्री पर उपभोक्ता ने अट्ठाईस रुपये प्रति किलो चुकाए। आपको साढ़े बारह रुपये यानी पैंतालीस प्रतिशत मिले। हब शुल्क कटने के बाद आपके बैंक खाते में दस रुपये बहत्तर पैसे प्रति किलो के हिसाब से कुल सोलह सौ आठ रुपये जमा हुए।'
         : lang === 'ta'
-        ? 'உங்கள் தக்காளி விற்பனையில் நுகர்வோர் ஒரு கிலோவுக்கு முப்பது ரூபாய் கொடுத்தார். உங்களுக்கு பதின்மூன்று ரூபாய் ஐம்பது காசு அதாவது நாற்பத்தைந்து சதவீதம் கிடைத்தது. பாரம்பரிய மண்டியில் முப்பத்து மூன்று சதவீதம் மட்டுமே கிடைக்கும். ஹப் கட்டணம் கழித்து உங்கள் வங்கிக் கணக்கில் பதினொரு ரூபாய் அறுபது காசு செலுத்தப்பட்டது.'
-        : 'On your tomato sale, consumer paid 30 rupees per kg. You realized 13 rupees 50 paise, which is 45 percent of consumer price, compared to 33 percent typical share without the hub. After hub fee of 1 rupee 90 paise, net payout to your account is 11 rupees 60 paise per kg.';
+        ? 'உங்கள் நாட்டுத் தக்காளி விற்பனையில் நுகர்வோர் ஒரு கிலோவுக்கு இருபத்தெட்டு ரூபாய் கொடுத்தார். உங்களுக்கு பன்னிரண்டு ரூபாய் அறுபது காசு கிடைத்தது. ஹப் கட்டணம் கழித்து உங்கள் வங்கிக் கணக்கில் பத்து ரூபாய் எழுபத்திரண்டு காசு வீதம் மொத்தம் ஆயிரத்து அறுநூற்று எட்டு ரூபாய் செலுத்தப்பட்டது.'
+        : 'On your Desi tomato sale, consumer paid 28 rupees per kg. You realized 12 rupees 60 paise, which is 45 percent. After hub fee, net payout to your account is 10 rupees 72 paise per kg, totaling 1,608 rupees.'
+      : isLot214
+      ? lang === 'hi'
+        ? 'आपका लॉट 214 अभी कूल पॉड में सुरक्षित है। उपभोक्ता का संदर्भ मूल्य बत्तीस रुपये प्रति किलो है। आपको बहत्तर रुपये का अग्रिम भुगतान मिल चुका है और शेष सात सौ छिहत्तर रुपये डिलीवरी पर मिलेंगे।'
+        : lang === 'ta'
+        ? 'உங்கள் லாட் 214 கூல் பாலில் பாதுகாப்பாக உள்ளது. நுகர்வோர் விலை முப்பத்திரண்டு ரூபாய். எழுநூற்று இருபது ரூபாய் முன்பணம் வழங்கப்பட்டுள்ளது, மீதி தொகை டெலிவரியின் போது வழங்கப்படும்.'
+        : 'Your Lot 214 is safely stored in the cool pod. Consumer reference price is 32 rupees per kg. 720 rupees advance has been disbursed, and remaining 776 rupees is locked in escrow due upon delivery.'
+      : lang === 'hi'
+      ? 'आपके हाइब्रिड टमाटर की बिक्री पर उपभोक्ता ने तीस रुपये प्रति किलो चुकाए। आपको साढ़े तेरह रुपये यानी पैंतालीस प्रतिशत मिले। पारंपरिक मंडी में केवल तैंतीस प्रतिशत मिलता था। हब शुल्क एक रुपया नब्बे पैसे कटने के बाद आपके बैंक खाते में ग्यारह रुपये साठ पैसे प्रति किलो जमा हुए। कुल ग्यारह सौ साठ रुपये आपके खाते में आ चुके हैं।'
+      : lang === 'ta'
+      ? 'உங்கள் தக்காளி விற்பனையில் நுகர்வோர் ஒரு கிலோவுக்கு முப்பது ரூபாய் கொடுத்தார். உங்களுக்கு பதின்மூன்று ரூபாய் ஐம்பது காசு அதாவது நாற்பத்தைந்து சதவீதம் கிடைத்தது. பாரம்பரிய மண்டியில் முப்பத்து மூன்று சதவீதம் மட்டுமே கிடைக்கும். ஹப் கட்டணம் கழித்து உங்கள் வங்கிக் கணக்கில் பதினொரு ரூபாய் அறுபது காசு செலுத்தப்பட்டது.'
+      : 'On your tomato sale, consumer paid 30 rupees per kg. You realized 13 rupees 50 paise, which is 45 percent of consumer price, compared to 33 percent typical share without the hub. After hub fee of 1 rupee 90 paise, net payout to your account is 11 rupees 60 paise per kg.';
 
     speak(textToSpeak, lang);
   };
@@ -55,11 +71,6 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
       setIsExporting(false);
     }, 300);
   };
-
-  // Dynamic lot configuration
-  const isLot198 = selectedLot === 'LOT-198';
-  const isLot210 = selectedLot === 'LOT-210';
-  const isLot214 = selectedLot === 'LOT-214';
 
   const lotMeta = isLot198
     ? {
