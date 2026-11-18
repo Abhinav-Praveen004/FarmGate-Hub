@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en" data-type="service">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="page-type" content="service" />
+  <meta name="site-kind" content="other" />
+  <title>FarmGate Hub: Peri-Urban Micro-Hubs for Indian Horticulture</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-enter>
+  <!-- Site Header & Sticky Navigation -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="#hero" class="brand-logo">
+        <span class="brand-icon">F</span>
+        <span class="brand-text">FarmGate Hub</span>
+        <span class="badge badge-accent">Peri-Urban Node</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#leak">The Leak</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#product">Live Prototype</a>
+        <a href="#numbers">Financial Model</a>
+        <a href="#ask">The Ask</a>
+      </nav>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="badge badge-simulated">Live Prototype</span>
+        <a href="http://localhost:5173/farmer" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="height: 38px; padding: 0 16px; font-size: 13px;">
+          Open App (P0) →
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Screen 1: Hero Section -->
+    <section id="hero" class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="badge badge-accent">Group 4 Research Prototype</span>
+          <h1 class="hero-title serif">Keep the Harvest, Keep the Value.</h1>
+          <p class="hero-subhead">
+            A peri-urban micro-hub model for Indian horticulture. We cut post-harvest loss from 30% to 8%, raise farmer income by +27.2%, and settle payments within 24 hours via UPI.
+          </p>
+
+          <div class="hero-actions">
+            <a href="http://localhost:5173/farmer" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              Launch Live Prototype →
+            </a>
+            <a href="#numbers" class="btn btn-outline">
+              Explore Financial Model
+            </a>
+          </div>
+        </div>
+
+        <div class="card" style="background: var(--surface); border: 2px solid var(--accent); padding: 32px;">
+          <span class="card-num">EXECUTIVE SUMMARY</span>
+          <h3 class="serif" style="font-size: 24px; margin-bottom: 12px;">The Peri-Urban Advantage</h3>
+          <p class="card-desc" style="font-size: 14px; margin-bottom: 20px;">
+            By placing 10-tonne solar-hybrid cool pods within 5 km of production clusters, FarmGate Hub eliminates the 15–25% spoilage of transit and aggregates micro-lots directly for institutional buyers.
+          </p>
+          <div style="padding: 12px; background: white; border-radius: 8px; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Pilot Cluster:</span>
+              <strong style="color: var(--accent);">Kolar #01, Karnataka</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Participating Farmers:</span>
+              <strong>300+ Smallholders</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>SLA Settlement:</span>
+              <strong style="color: var(--accent);">100% On-Time (UPI)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" style="margin-top: 48px;">
+        <div class="metrics-strip">
+          <div class="metric-cell">
+            <div class="num">30% → 8%</div>
+            <div class="lbl">Post-Harvest Loss Reduction</div>
+          </div>
+          <div class="metric-cell">
+            <div class="num">+27.2%</div>
+            <div class="lbl">Farmer Net Realisation Uplift</div>
+          </div>
+          <div class="metric-cell">
+            <div class="num">&lt; 24 Hours</div>
+            <div class="lbl">Guaranteed UPI Settlement SLA</div>
+          </div>
+          <div class="metric-cell">
+            <div class="num">2.6 Years</div>
+            <div class="lbl">Single Hub Capex Payback</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: The Leak -->
+    <section id="leak">
+      <div class="container">
+        <span class="badge badge-neutral">Section 4.1 Root Cause</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          Why Smallholders Lose 30% Before Reaching the Market
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 40px; font-size: 16px;">
+          Indian horticulture hemorrhages ₹38,600 Crore each year across four interlocking structural failure points:
+        </p>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-num">01 / DECAY</div>
+            <h3 class="card-title">Physical Spoilage</h3>
+            <p class="card-desc">
+              Lack of immediate pre-cooling in field heat triggers rapid degradation. 15% to 25% of fresh tomatoes rot within 48 hours.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">02 / OPACITY</div>
+            <h3 class="card-title">Price Asymmetry</h3>
+            <p class="card-desc">
+              Daily mandi price swings leave smallholders blind. Without holding power, farmers are forced into distress sales at ₹9.00/kg.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">03 / MARGIN CUTS</div>
+            <h3 class="card-title">Intermediary Rents</h3>
+            <p class="card-desc">
+              Multiple tiers of commission agents and brokers extract margins, leaving the farmer with only 33% of the final consumer rupee.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">04 / LIQUIDITY</div>
+            <h3 class="card-title">Delayed Liquidity</h3>
+            <p class="card-desc">
+              Traditional credit cycles take 15 to 45 days. Immediate cash needs force farmers into high-interest local debt.
+            </p>
+          </div>
+        </div>
+
+        <!-- Interactive Leak Simulation Plug Box -->
+        <div class="card" style="margin-top: 36px; background: var(--surface);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h4 class="serif" style="font-size: 20px;">Interactive System Simulator: Plugging the Leaks</h4>
+              <p style="font-size: 13px; color: var(--ink-muted);">Check how FarmGate Hub interventions progressively restore farmer value:</p>
+            </div>
+            <div style="display: flex; gap: 16px; font-family: var(--font-mono); font-size: 13px;">
+              <div>Active Spoilage: <strong id="total-spoilage-loss" style="color: var(--accent);">8.0%</strong></div>
+              <div>Farmer Share: <strong id="farmer-net-share" style="color: var(--accent);">45.0%</strong></div>
+            </div>
+          </div>
+
+          <div class="grid-4" style="font-size: 13px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="leak-toggle" checked data-reduction="14" data-share="4" style="accent-color: var(--accent);" />
+              <span>Solar Cool Pod (11.5°C)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="leak-toggle" checked data-reduction="4" data-share="3" style="accent-color: var(--accent);" />
+              <span>30-Second Grading AI</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="leak-toggle" checked data-reduction="2" data-share="3" style="accent-color: var(--accent);" />
+              <span>Collective Load Matcher</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="leak-toggle" checked data-reduction="2" data-share="2" style="accent-color: var(--accent);" />
+              <span>24h UPI SLA Payout</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: The Assumption We Reject -->
+    <section id="assumption" style="background: white;">
+      <div class="container">
+        <span class="badge badge-accent">Section 4.2 Architectural Thesis</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          The Centralized Agritech Myth We Explicitly Reject
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 40px; font-size: 16px;">
+          Traditional corporate supply chain players build multi-crore mega-packhouses 60 km away from farms. Smallholders cannot afford the transit.
+        </p>
+
+        <div class="grid-2">
+          <div class="card" style="border-left: 4px solid #ef4444;">
+            <span class="card-num" style="color: #ef4444;">TRADITIONAL MEGA-PACKHOUSE MODEL</span>
+            <h3 class="card-title">Centralized & Capex Heavy</h3>
+            <ul style="list-style: none; margin-top: 16px; font-size: 13px; line-height: 1.8; color: var(--ink-muted);">
+              <li>❌ ₹15–20 Crore capex for 100-tonne centralized facilities.</li>
+              <li>❌ Located 50–80 km away; smallholders cannot transport small 100 kg lots.</li>
+              <li>❌ High fixed overhead requires high utilization from industrial mono-crops.</li>
+              <li>❌ Leaves 86% of marginal farmers stranded at the local commission mandi.</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-left: 4px solid var(--accent); background: var(--accent-light);">
+            <span class="card-num">FARMGATE HUB MICRO-MODEL</span>
+            <h3 class="card-title">Hyper-Local & Modular</h3>
+            <ul style="list-style: none; margin-top: 16px; font-size: 13px; line-height: 1.8; color: var(--ink);">
+              <li>✓ ₹25 Lakh lean capex per 10-tonne modular solar cool pod.</li>
+              <li>✓ Located within 5 km of 300+ farmer households; accessible by auto or tractor.</li>
+              <li>✓ Thermal phase-change backup ensures 72-hour cooling without diesel generators.</li>
+              <li>✓ Collective loads aggregated locally to fulfill institutional wholesale buyer demand.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4: How a Hub Works -->
+    <section id="how-it-works">
+      <div class="container">
+        <span class="badge badge-neutral">Operational Blueprint</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          From Farm Gate to Wholesale Buyer in 4 Disciplined Steps
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 40px; font-size: 16px;">
+          A streamlined, repeatable 24-hour cycle verified on the Kolar Hub pilot:
+        </p>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-num">08:00 AM • STEP 1</div>
+            <h3 class="card-title">Intake & Grading</h3>
+            <p class="card-desc">
+              Produce is weighed on a digital platform scale. A 30-second checklist grades quality (A/B/C) and prints a thermal QR traceability label.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">09:00 AM • STEP 2</div>
+            <h3 class="card-title">Cool Pod Pre-Cooling</h3>
+            <p class="card-desc">
+              Lots are loaded into the 10-tonne solar cool pod at 11.5°C. Immediate field-heat removal extends marketable shelf-life up to 72 hours.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">14:00 PM • STEP 3</div>
+            <h3 class="card-title">Collective Load Match</h3>
+            <p class="card-desc">
+              The algorithmic demand engine aggregates micro-lots into wholesale orders (e.g. 500 kg Grade A for Annapurna Retail @ ₹14.00/kg).
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">18:00 PM • STEP 4</div>
+            <h3 class="card-title">24h UPI Settlement</h3>
+            <p class="card-desc">
+              As soon as the collective truck dispatches, automated direct UPI transfers disburse net proceeds. 100% on-time SLA guarantee.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 5: The Product (Live Interactive Mockups) -->
+    <section id="product" style="background: white;">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: 48px;">
+          <span class="badge badge-accent">Live Multi-Surface Prototype</span>
+          <h2 class="serif" style="font-size: 38px; margin-top: 8px;">The FarmGate Hub Software Suite</h2>
+          <p style="color: var(--ink-muted); max-width: 600px; margin: 12px auto 0; font-size: 16px;">
+            Mobile-first farmer app in 3 languages, tablet operator console, and transparent double-entry receipts.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <!-- Mockup Frame 1: Screen 1 -->
+          <div class="phone-mockup">
+            <div class="phone-notch"></div>
+            <div class="phone-content" style="background: #f8f8f8;">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 12px;">
+                <span>SCREEN 1: PRICE</span>
+                <span style="color: var(--accent);">LIVE SIM</span>
+              </div>
+              <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                <div style="font-size: 10px; color: var(--ink-muted);">Mandi Price</div>
+                <div style="font-size: 20px; font-family: var(--font-mono); font-weight: bold; color: #dc2626;">₹9.00 / kg</div>
+              </div>
+              <div style="background: var(--accent-light); border: 1px solid rgba(31,107,58,0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-size: 10px; color: var(--accent); font-weight: bold;">BEST VERIFIED BUYER BID</div>
+                <div style="font-size: 22px; font-family: var(--font-mono); font-weight: bold; color: var(--accent);">₹14.00 / kg</div>
+                <div style="font-size: 10px; color: var(--accent);">+56% uplift vs Mandi</div>
+              </div>
+              <div style="font-size: 11px; color: var(--ink-muted); line-height: 1.4; margin-bottom: 16px;">
+                "Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ₹14–15/kg."
+              </div>
+              <a href="http://localhost:5173/farmer" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: var(--accent); color: white; padding: 8px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 11px;">
+                HOLD IN POD (72H)
+              </a>
+            </div>
+          </div>
+
+          <!-- Mockup Frame 2: Screen 2 -->
+          <div class="phone-mockup">
+            <div class="phone-notch"></div>
+            <div class="phone-content" style="background: #f8f8f8;">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 12px;">
+                <span>SCREEN 2: MY LOTS</span>
+                <span style="color: var(--accent);">IN POD</span>
+              </div>
+              <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 12px;">
+                  <span>Lot #214 (Tomato)</span>
+                  <span style="color: var(--accent);">Grade A</span>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); margin-top: 4px;">
+                  120 kg • 14h in Cool Pod (11.5°C)
+                </div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-size: 10px; font-weight: bold; color: var(--accent);">MATCHED BUYER (78% FIT)</div>
+                <div style="font-weight: bold; font-size: 12px; margin-top: 2px;">Annapurna Retail (ORD-771)</div>
+                <div style="font-size: 10px; color: var(--ink-muted); margin-top: 4px;">
+                  Collective Load #CL-04 • Dispatched
+                </div>
+              </div>
+              <div style="background: #fef3c7; border: 1px dashed #d97706; border-radius: 6px; padding: 8px; font-size: 10px; color: #92400e;">
+                24h Payout Clock: 18h 42m remaining
+              </div>
+            </div>
+          </div>
+
+          <!-- Mockup Frame 3: Screen 3 -->
+          <div class="phone-mockup">
+            <div class="phone-notch"></div>
+            <div class="phone-content" style="background: #f8f8f8;">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 12px;">
+                <span>SCREEN 3: RECEIPT</span>
+                <span style="color: var(--accent);">PAID</span>
+              </div>
+              <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-size: 10px; color: var(--ink-muted);">Consumer Paid: ₹30.00/kg</div>
+                <div style="font-size: 16px; font-family: var(--font-mono); font-weight: bold; color: var(--accent); margin-top: 2px;">
+                  Farmer: ₹13.50/kg (45%)
+                </div>
+                <div style="font-size: 10px; color: var(--ink-muted); margin-top: 2px;">
+                  vs 33% typical mandi share
+                </div>
+              </div>
+              <div style="font-family: var(--font-mono); font-size: 10px; line-height: 1.6; background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                <div>Gross: ₹1,350.00 (100 kg)</div>
+                <div>Hub Fee: -₹190.50</div>
+                <div style="font-weight: bold; color: var(--accent); border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;">
+                  Net UPI: ₹1,159.50
+                </div>
+                <div style="color: var(--ink-muted); font-size: 9px;">UTR: UPI/432198004123</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 36px;">
+          <a href="http://localhost:5173/farmer" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="height: 52px; font-size: 15px;">
+            Open Live Interactive Prototype (All Surfaces) →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 6: The Numbers (Report Reconciliation) -->
+    <section id="numbers">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <span class="badge badge-accent">Section 4.7 Reconciled Model</span>
+            <h2 class="serif" style="font-size: 38px; margin-top: 8px;">
+              4-Year Network Projections & Unit Economics
+            </h2>
+          </div>
+          <span class="badge badge-accent">Matches the Report</span>
+        </div>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 24px; font-size: 15px;">
+          Reconciled across all 4 cohorts from student report &apos;Improving Farmers&apos; Income&apos; (Group 4). Zero reconciliation drift.
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th class="num">Hubs</th>
+                <th class="num">Volume (MT)</th>
+                <th class="num">Farmer Net Income</th>
+                <th class="num">Network Revenue</th>
+                <th class="num">EBITDA</th>
+                <th class="num">Margin %</th>
+                <th class="num">Capex</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight: bold;">Year 1</td>
+                <td class="num">3</td>
+                <td class="num">3,000</td>
+                <td class="num">₹3.34 Cr</td>
+                <td class="num">₹0.69 Cr</td>
+                <td class="num" style="color: #dc2626;">-₹0.04 Cr</td>
+                <td class="num" style="color: #dc2626;">-6%</td>
+                <td class="num">₹0.75 Cr</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold;">Year 2</td>
+                <td class="num">10</td>
+                <td class="num">12,000</td>
+                <td class="num">₹13.36 Cr</td>
+                <td class="num">₹2.76 Cr</td>
+                <td class="num" style="color: var(--accent);">+₹0.24 Cr</td>
+                <td class="num" style="color: var(--accent);">+9%</td>
+                <td class="num">₹2.50 Cr</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold;">Year 3</td>
+                <td class="num">25</td>
+                <td class="num">37,500</td>
+                <td class="num">₹41.74 Cr</td>
+                <td class="num">₹8.63 Cr</td>
+                <td class="num" style="color: var(--accent);">+₹1.57 Cr</td>
+                <td class="num" style="color: var(--accent);">+18%</td>
+                <td class="num">₹6.25 Cr</td>
+              </tr>
+              <tr style="background: var(--accent-light);">
+                <td style="font-weight: bold; color: var(--accent);">Year 4 (Mature)</td>
+                <td class="num" style="font-weight: bold;">25</td>
+                <td class="num" style="font-weight: bold;">50,000</td>
+                <td class="num" style="font-weight: bold;">₹55.66 Cr</td>
+                <td class="num" style="font-weight: bold; color: var(--accent);">₹11.50 Cr</td>
+                <td class="num" style="font-weight: bold; color: var(--accent);">+₹2.10 Cr</td>
+                <td class="num" style="font-weight: bold; color: var(--accent);">+18%</td>
+                <td class="num" style="font-weight: bold;">₹6.25 Cr</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 7: Why This Idea Wins -->
+    <section id="advantage" style="background: white;">
+      <div class="container">
+        <span class="badge badge-neutral">Strategic Moat</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          Why FarmGate Hub Defends and Scales Its Advantage
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 40px; font-size: 16px;">
+          Four compounding barriers that protect unit economics and network density:
+        </p>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-num">01 / ECONOMICS</div>
+            <h3 class="card-title">Lean Capex Payback</h3>
+            <p class="card-desc">
+              At only ₹25 Lakhs per hub, breakeven is reached in Month 21 and full capital payback in 2.6 years.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">02 / FPO NETWORK</div>
+            <h3 class="card-title">Zero CAC Distribution</h3>
+            <p class="card-desc">
+              Partnering directly with local Farmer Producer Organisations delivers instant cluster density without individual farmer acquisition spending.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">03 / POLICY FIT</div>
+            <h3 class="card-title">Government Tailwinds</h3>
+            <p class="card-desc">
+              Eligible for Agriculture Infrastructure Fund (AIF 3% interest subvention) and PMKSY micro-cold chain grants.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">04 / BUYER RETENTION</div>
+            <h3 class="card-title">12% Sourcing Savings</h3>
+            <p class="card-desc">
+              Wholesale buyers save 12% vs traditional mandi brokerage while securing graded, traceable produce delivered on a strict 24-hour schedule.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 8: Roadmap & Milestones -->
+    <section id="roadmap">
+      <div class="container">
+        <span class="badge badge-neutral">Execution Plan</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          4-Phase Expansion Roadmap
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 40px; font-size: 16px;">
+          De-risking operations through sequential cluster validation:
+        </p>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-num">PHASE 1 • MONTHS 1-6</div>
+            <h3 class="card-title">Pilot Validation</h3>
+            <p class="card-desc">
+              3 pilot hubs deployed in Kolar cluster. Handle 3,000 MT volume, prove 24-hour UPI settlement SLA, calibrate tomato grading models.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">PHASE 2 • MONTHS 7-18</div>
+            <h3 class="card-title">Cluster Expansion</h3>
+            <p class="card-desc">
+              Scale to 10 hubs in Karnataka and Andhra Pradesh. Reach 12,000 MT annual volume and achieve network operating profitability (+₹0.24 Cr).
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">PHASE 3 • MONTHS 19-36</div>
+            <h3 class="card-title">Multi-Cluster Scale</h3>
+            <p class="card-desc">
+              Deploy 25 hubs across 5 peri-urban clusters. Handle 37,500 MT, generate ₹8.63 Cr revenue and ₹1.57 Cr EBITDA (18% margin).
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-num">PHASE 4 • YEAR 4+</div>
+            <h3 class="card-title">Mature Network</h3>
+            <p class="card-desc">
+              Full capacity network handling 50,000 MT produce. Generates ₹11.50 Cr revenue, +₹2.10 Cr EBITDA, and ₹55.66 Cr in farmer payouts.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 9: The Ask (Seed Round & Briefing Form) -->
+    <section id="ask" style="background: white;">
+      <div class="container">
+        <div class="grid-2" style="align-items: center;">
+          <div>
+            <span class="badge badge-accent">Seed Round Financing</span>
+            <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+              ₹5.00 Crore Seed Investment
+            </h2>
+            <p style="color: var(--ink-muted); margin-bottom: 24px; font-size: 15px; line-height: 1.6;">
+              Capitalized to deploy 10 next-generation hubs, prove multi-cluster network effects, and scale the digital trading ledger to ₹2.76 Cr revenue.
+            </p>
+
+            <div style="space-y: 12px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                <span>Cold Chain Hardware & Solar Pods (55%):</span>
+                <strong class="mono">₹2.75 Cr</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                <span>Software, Matcher & WhatsApp Bot (25%):</span>
+                <strong class="mono">₹1.25 Cr</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                <span>Working Capital & Farmer Advance Float (20%):</span>
+                <strong class="mono">₹1.00 Cr</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule Briefing Form -->
+          <div class="card" style="padding: 32px; background: var(--surface);">
+            <h3 class="serif" style="font-size: 22px; margin-bottom: 8px;">Schedule Partner / Investor Briefing</h3>
+            <p style="font-size: 12px; color: var(--ink-muted); margin-bottom: 20px;">
+              Request access to full cohort models, engineering blueprints, and Kolar hub visit.
+            </p>
+
+            <form id="lead-form" style="display: flex; flex-direction: column; gap: 12px;">
+              <input
+                type="text"
+                required
+                placeholder="Full Name"
+                style="height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 13px;"
+              />
+              <input
+                type="email"
+                required
+                placeholder="Work Email"
+                style="height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 13px;"
+              />
+              <input
+                type="text"
+                required
+                placeholder="Fund / Organisation Name"
+                style="height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 13px;"
+              />
+              <select style="height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 13px; background: white;">
+                <option value="investor">Early-Stage Agritech / Climate Fund</option>
+                <option value="fpo">FPO Federation Leader</option>
+                <option value="buyer">Institutional Produce Buyer</option>
+                <option value="policy">Government / AIF Representative</option>
+              </select>
+              <button type="submit" class="btn btn-primary" style="height: 48px; margin-top: 8px;">
+                Submit Briefing Request →
+              </button>
+            </form>
+
+            <div id="lead-success" style="display: none; padding: 20px; background: var(--accent-light); border: 1px solid rgba(31,107,58,0.3); border-radius: 8px; text-align: center;">
+              <strong style="color: var(--accent); display: block; font-size: 14px;">Briefing Request Received!</strong>
+              <p style="font-size: 12px; color: var(--ink-muted); margin-top: 4px;">
+                Our coordinator will reach out within 24 hours with the financial model workbook.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 10: Team, Method & Sources -->
+    <section id="team">
+      <div class="container">
+        <span class="badge badge-neutral">Origin & Principles</span>
+        <h2 class="serif" style="font-size: 38px; margin-top: 8px; margin-bottom: 16px;">
+          Developed from &apos;Improving Farmers&apos; Income&apos;
+        </h2>
+        <p style="color: var(--ink-muted); max-width: 680px; margin-bottom: 32px; font-size: 15px;">
+          Built upon the core research, field interviews, and unit economic foundations of Group 4.
+        </p>
+
+        <div class="grid-3" style="font-size: 13px;">
+          <div class="card">
+            <h4 style="font-weight: bold; margin-bottom: 8px;">Section 4 Economics</h4>
+            <p style="color: var(--ink-muted); line-height: 1.5;">
+              Every baseline metric, mandi price, and fee structure strictly preserves the report figures: ₹8,751.6 vs ₹11,131.2 per tonne.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4 style="font-weight: bold; margin-bottom: 8px;">Honest Simulation</h4>
+            <p style="color: var(--ink-muted); line-height: 1.5;">
+              All simulated hardware feeds, scale readings, and UPI transactions carry visible disclosure badges. No fake external dependencies.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4 style="font-weight: bold; margin-bottom: 8px;">Farmer Agency First</h4>
+            <p style="color: var(--ink-muted); line-height: 1.5;">
+              The platform advises; the farmer decides. No automated liquidation without explicit tap-to-sell or hold confirmation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span class="brand-icon" style="width: 24px; height: 24px; font-size: 13px;">F</span>
+            <span style="font-family: var(--font-serif); font-size: 18px; font-weight: bold; color: var(--ink);">FarmGate Hub</span>
+          </div>
+          <p style="max-width: 380px; line-height: 1.5;">
+            Decentralized peri-urban cold chain and digital aggregation infrastructure for Indian smallholders.
+          </p>
+          <p style="margin-top: 8px; font-size: 11px; font-family: var(--font-mono);">
+            Hub Node #01: Kolar Peri-Urban Cluster, Karnataka
+          </p>
+        </div>
+
+        <div>
+          <h5 style="font-weight: bold; color: var(--ink); margin-bottom: 12px; font-size: 12px; text-transform: uppercase; font-family: var(--font-mono);">Surfaces</h5>
+          <ul style="list-style: none; space-y: 6px; line-height: 2;">
+            <li><a href="http://localhost:5173/farmer" target="_blank" rel="noopener noreferrer" style="color: var(--ink-muted); text-decoration: none;">Farmer Mobile App</a></li>
+            <li><a href="http://localhost:5173/hub" target="_blank" rel="noopener noreferrer" style="color: var(--ink-muted); text-decoration: none;">Hub Operator Console</a></li>
+            <li><a href="http://localhost:5173/impact" target="_blank" rel="noopener noreferrer" style="color: var(--ink-muted); text-decoration: none;">Impact & Investor Dashboard</a></li>
+            <li><a href="http://localhost:5173/styleguide" target="_blank" rel="noopener noreferrer" style="color: var(--ink-muted); text-decoration: none;">UI Design Tokens & System</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 style="font-weight: bold; color: var(--ink); margin-bottom: 12px; font-size: 12px; text-transform: uppercase; font-family: var(--font-mono);">Research</h5>
+          <ul style="list-style: none; space-y: 6px; line-height: 2;">
+            <li><span style="color: var(--ink-muted);">Group 4 Student Report</span></li>
+            <li><span style="color: var(--ink-muted);">&apos;Improving Farmers&apos; Income&apos;</span></li>
+            <li><span style="color: var(--ink-muted);">Indian Horticulture Post-Harvest Study</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 FarmGate Hub Initiative. Prototype licensed under MIT. Fonts: Instrument Serif & Instrument Sans.
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px;">
+          Simulated Prototype • Zero External Credentials Required
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

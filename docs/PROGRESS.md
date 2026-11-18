@@ -57,3 +57,11 @@ Running log of completed tasks across project milestones.
 - [x] M5-T09: Implemented `FundingMarketView` with TAM (₹38,600 Cr), SAM (₹610 Cr), SOM (₹6.98 Cr), and ₹5.0 Cr Seed Round Use of Funds breakdown.
 - [x] M5-T10: Implemented `SensitivitySliders` for volume, price, and adoption with real-time recalculation of EBITDA and payback.
 - [x] M5-T11: Implemented `ImpactLayout` dashboard shell and verified with headless browser screenshots at 1024px and 1440px viewports (`docs/shots/`).
+- [x] M6-T01: Scaffolded static pitch site in `apps/site` configured on port 4000.
+- [x] M6-T02: Implemented 10 narrative screens based on Section 8.5 with `mint-pink-accounts` design system and anti-slop copy.
+- [x] M6-T03: Built interactive leak simulator plugging 4 harvest leaks (30% down to 8% loss, 33% to 45% farmer share).
+- [x] M6-T04: Embedded interactive mobile phone mockup frames showcasing Screens 1, 2, and 3.
+- [x] M6-T05: Reconciled 4-Year network financial table and per-tonne tomato economics on public pitch site.
+- [x] M6-T06: Implemented investor & partner briefing lead form.
+- [x] M6-T07: Verified pitch site responsive rendering and captured headless browser screenshots at 1440px and 390px viewports (`docs/shots/`).
+- [x] M6-T08: Reached Gate G2 Review Stop with all P0 deliverables operational.
