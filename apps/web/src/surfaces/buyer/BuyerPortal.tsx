@@ -61,11 +61,10 @@ export const BuyerPortal: React.FC = () => {
         <div className="flex gap-2 border-b border-border pb-px overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('catalog')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              activeTab === 'catalog'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'catalog'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-            }`}
+              }`}
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Graded Hub Supply</span>
@@ -73,11 +72,10 @@ export const BuyerPortal: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              activeTab === 'orders'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'orders'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-            }`}
+              }`}
           >
             <Truck className="w-4 h-4" />
             <span>Active Dispatches & Escrow</span>
@@ -85,11 +83,10 @@ export const BuyerPortal: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('traceability')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              activeTab === 'traceability'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'traceability'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-            }`}
+              }`}
           >
             <QrIcon className="w-4 h-4" />
             <span>Lot Traceability</span>
@@ -198,11 +195,10 @@ export const BuyerPortal: React.FC = () => {
                         <button
                           key={qty}
                           onClick={() => setOrderQuantityKg(qty)}
-                          className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border ${
-                            orderQuantityKg === qty
+                          className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border ${orderQuantityKg === qty
                               ? 'bg-accent text-white border-accent'
                               : 'bg-surface border-border text-ink'
-                          }`}
+                            }`}
                         >
                           {qty} kg
                         </button>

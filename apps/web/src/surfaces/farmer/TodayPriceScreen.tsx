@@ -12,6 +12,13 @@ const CROPS = [
   { id: 'chilli', emoji: '🌶️', en: 'Chilli', hi: 'मिर्च', ta: 'பச்சை மிளகாய்' },
 ];
 
+const CROP_VARIANTS: Record<string, { en: string; hi: string; ta: string }> = {
+  tomato: { en: 'Hybrid Tomato', hi: 'टमाटर (हाइब्रिड)', ta: 'தக்காளி (ஹைப்ரிட்)' },
+  onion: { en: 'Nashik Red Onion', hi: 'प्याज़ (नासिक लाल)', ta: 'வெங்காயம் (நாசிக் சிகப்பு)' },
+  potato: { en: 'Kufri Jyoti Potato', hi: 'आलू (कुफरी ज्योति)', ta: 'உருளைக்கிழங்கு (குஃப்ரி ஜோதி)' },
+  chilli: { en: 'Guntur Hot Chilli', hi: 'हरी मिर्च (गुंटूर)', ta: 'பச்சை மிளகாய் (குண்டூர்)' },
+};
+
 export const TodayPriceScreen: React.FC = () => {
   const { lang, t, speak, isSpeaking } = useLanguage();
   const { activePersona } = useDemo();
@@ -23,34 +30,45 @@ export const TodayPriceScreen: React.FC = () => {
   const makeDecision = useMakeLotDecision();
 
   // Find lot in pod for this crop if any
-  const podLot = lots?.find((l) => l.crop.toLowerCase() === selectedCrop.toLowerCase() && l.status === 'IN_POD');
+  const podLot = lots?.find(
+    (l) => l.crop.toLowerCase() === selectedCrop.toLowerCase() && l.status.toUpperCase() === 'IN_POD'
+  );
+
+  const currentCropVariant =
+    CROP_VARIANTS[selectedCrop]?.[lang] || CROP_VARIANTS[selectedCrop]?.en || 'Produce';
+  const currentCropSimple =
+    CROPS.find((c) => c.id === selectedCrop)?.[lang] || selectedCrop;
 
   const handleSell = () => {
     if (podLot) {
       makeDecision.mutate(
-        { lotId: podLot.id, decision: 'SELL' },
+        {
+          lotId: podLot.id,
+          decision: 'SELL',
+          priceRupees: priceData?.buyerBidRupees || 14.0,
+        },
         {
           onSuccess: () => {
             setFeedbackMessage(
               lang === 'hi'
-                ? `लॉट #${podLot.lotNumber} को ₹${priceData?.buyerBidRupees || 14}/किग्रा के भाव पर बेचने की पुष्टि हुई!`
+                ? `लॉट #${podLot.lotNumber} (${currentCropSimple}) को ₹${priceData?.buyerBidRupees || 14}/किग्रा के भाव पर बेचने की पुष्टि हुई! डाटा कलेक्टिव लोड में भेज दिया गया है।`
                 : lang === 'ta'
-                ? `லாட் #${podLot.lotNumber} ₹${priceData?.buyerBidRupees || 14}/கிலோ விற்பனைக்கு உறுதி செய்யப்பட்டது!`
-                : `Confirmed sale for Lot #${podLot.lotNumber} at ₹${priceData?.buyerBidRupees || 14}/kg!`
+                ? `லாட் #${podLot.lotNumber} (${currentCropSimple}) ₹${priceData?.buyerBidRupees || 14}/கிலோ விற்பனைக்கு உறுதி செய்யப்பட்டது! கூட்டு சுமைக்கு அனுப்பப்பட்டது.`
+                : `Confirmed sale for Lot #${podLot.lotNumber} (${currentCropSimple}) at ₹${priceData?.buyerBidRupees || 14}/kg! Queued for collective dispatch & payout.`
             );
-            setTimeout(() => setFeedbackMessage(null), 5000);
+            setTimeout(() => setFeedbackMessage(null), 6000);
           },
         }
       );
     } else {
       setFeedbackMessage(
         lang === 'hi'
-          ? 'नया लॉट लाने के लिए हब पर जाएं या व्हाट्सएप पर स्लॉट बुक करें।'
+          ? `आपके पास कूल पॉड में कोई सक्रिय ${currentCropSimple} लॉट नहीं है। नया लॉट लाने के लिए हब पर जाएं या व्हाट्सएप पर स्लॉट बुक करें।`
           : lang === 'ta'
-          ? 'புதிய அறுவடையை கொண்டு வர ஹப்பிற்கு வரவும் அல்லது வாட்ஸ்அப்பில் பதிவு செய்யவும்.'
-          : 'Visit Hub for intake or message on WhatsApp to reserve a delivery slot.'
+          ? `கூல் பாலில் உங்களிடம் ${currentCropSimple} லாட் இல்லை. புதிய அறுவடையை கொண்டு வர ஹப்பிற்கு வரவும்.`
+          : `No active ${currentCropSimple} lot currently in the Cool Pod. Visit Hub for intake or message on WhatsApp to reserve a delivery slot.`
       );
-      setTimeout(() => setFeedbackMessage(null), 5000);
+      setTimeout(() => setFeedbackMessage(null), 6000);
     }
   };
 
@@ -62,24 +80,24 @@ export const TodayPriceScreen: React.FC = () => {
           onSuccess: () => {
             setFeedbackMessage(
               lang === 'hi'
-                ? `लॉट #${podLot.lotNumber} को कूल पॉड में ${hours} घंटे तक सुरक्षित रखा गया है।`
+                ? `लॉट #${podLot.lotNumber} (${currentCropSimple}) को कूल पॉड में ${hours} घंटे तक सुरक्षित रखा गया है (न्यूनतम गारंटी ₹${priceData?.floorPriceRupees || 11}/किग्रा)।`
                 : lang === 'ta'
-                ? `லாட் #${podLot.lotNumber} கூல் பாலில் ${hours} மணி நேரம் வைத்திருக்க பதிவு செய்யப்பட்டது.`
-                : `Lot #${podLot.lotNumber} scheduled to hold in Cool Pod for ${hours}h with ₹11/kg floor protection.`
+                ? `லாட் #${podLot.lotNumber} (${currentCropSimple}) கூல் பாலில் ${hours} மணி நேரம் வைத்திருக்க பதிவு செய்யப்பட்டது.`
+                : `Lot #${podLot.lotNumber} (${currentCropSimple}) scheduled to hold in Cool Pod for ${hours}h with ₹${priceData?.floorPriceRupees || 11}/kg floor protection.`
             );
-            setTimeout(() => setFeedbackMessage(null), 5000);
+            setTimeout(() => setFeedbackMessage(null), 6000);
           },
         }
       );
     } else {
       setFeedbackMessage(
         lang === 'hi'
-          ? 'कूल पॉड में रखने के लिए हब पर टमाटर लाएं।'
+          ? `कूल पॉड में रखने के लिए हब पर ${currentCropSimple} लाएं।`
           : lang === 'ta'
-          ? 'கூல் பாலில் வைக்க உங்கள் தக்காளியை ஹப்பிற்கு கொண்டு வாருங்கள்.'
-          : 'Bring harvest to hub intake to place in Cool Pod storage.'
+          ? `கூல் பாலில் வைக்க உங்கள் ${currentCropSimple}யை ஹப்பிற்கு கொண்டு வாருங்கள்.`
+          : `Bring harvest to hub intake to place in Cool Pod storage.`
       );
-      setTimeout(() => setFeedbackMessage(null), 5000);
+      setTimeout(() => setFeedbackMessage(null), 6000);
     }
   };
 
@@ -87,10 +105,10 @@ export const TodayPriceScreen: React.FC = () => {
     if (!priceData) return;
     const textToSpeak =
       lang === 'hi'
-        ? `टमाटर का आज का मंडी भाव नौ रुपये प्रति किलो है। सत्यापित खरीदार बोली चौदह रुपये प्रति किलो है। ${priceData.adviceSentence}`
+        ? `${currentCropSimple} का आज का मंडी भाव ₹${priceData.mandiPriceRupees} प्रति किलो है। सत्यापित खरीदार बोली ₹${priceData.buyerBidRupees} प्रति किलो है। ${priceData.adviceSentence}`
         : lang === 'ta'
-        ? `இன்றைய மண்டி விலை கிலோவுக்கு ஒன்பது ரூபாய். சரிபார்க்கப்பட்ட வாங்குபவர் விலை பதினான்கு ரூபாய். ${priceData.adviceSentence}`
-        : `Today's mandi price is 9 rupees per kilogram. Best verified buyer bid is 14 rupees. ${priceData.adviceSentence}`;
+        ? `இன்றைய ${currentCropSimple} மண்டி விலை கிலோவுக்கு ₹${priceData.mandiPriceRupees}. சரிபார்க்கப்பட்ட வாங்குபவர் விலை ₹${priceData.buyerBidRupees}. ${priceData.adviceSentence}`
+        : `Today's ${currentCropSimple} mandi price is ₹${priceData.mandiPriceRupees} per kilogram. Best verified buyer bid is ₹${priceData.buyerBidRupees}. ${priceData.adviceSentence}`;
     speak(textToSpeak, lang);
   };
 
@@ -137,9 +155,9 @@ export const TodayPriceScreen: React.FC = () => {
 
       {/* Feedback Alert if action taken */}
       {feedbackMessage && (
-        <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg flex items-start gap-2 text-xs text-accent-ink animate-fadeIn">
+        <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg flex items-start gap-2 text-xs text-ink animate-fadeIn shadow-xs">
           <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-          <p className="font-medium">{feedbackMessage}</p>
+          <p className="font-semibold text-ink leading-relaxed">{feedbackMessage}</p>
         </div>
       )}
 
@@ -152,7 +170,7 @@ export const TodayPriceScreen: React.FC = () => {
         </div>
       ) : (
         <SellHoldCard
-          cropName={lang === 'hi' ? 'टमाटर (हाइब्रिड)' : lang === 'ta' ? 'தக்காளி (ஹைப்ரிட்)' : 'Hybrid Tomato'}
+          cropName={currentCropVariant}
           mandiPriceRupees={priceData?.mandiPriceRupees || 9.0}
           buyerBidRupees={priceData?.buyerBidRupees || 14.0}
           floorPriceRupees={priceData?.floorPriceRupees || 11.0}
@@ -161,10 +179,10 @@ export const TodayPriceScreen: React.FC = () => {
           adviceSentence={
             priceData?.adviceSentence ||
             (lang === 'hi'
-              ? 'कूल पॉड में 1 दिन रखें: कल दोपहर में ₹14-15/किग्रा पर मांग सबसे अधिक होगी।'
+              ? `कूल पॉड में 1 दिन रखें: कल दोपहर में ₹${priceData?.forecastLowRupees || 13}-${priceData?.forecastHighRupees || 15}/किग्रा पर मांग सबसे अधिक होगी।`
               : lang === 'ta'
-              ? 'கூல் பாலில் 1 நாள் வைக்கவும்: நாளை மதியம் ₹14-15/கிலோ வரை வாங்குபவர் தேவை அதிகரிக்கும்.'
-              : 'Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ₹14–15/kg.')
+              ? `கூல் பாலில் 1 நாள் வைக்கவும்: நாளை மதியம் ₹${priceData?.forecastLowRupees || 13}-${priceData?.forecastHighRupees || 15}/கிலோ வரை தேவை அதிகரிக்கும்.`
+              : `Hold 1 day in cool pod: buyer demand peaks tomorrow afternoon at ₹${priceData?.forecastLowRupees || 13}–${priceData?.forecastHighRupees || 15}/kg.`)
           }
           recommendedAction={priceData?.recommendedAction || 'HOLD'}
           remainingHoldHours={podLot ? 58 : 72}
@@ -180,14 +198,18 @@ export const TodayPriceScreen: React.FC = () => {
         <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-ink">
-            {lang === 'hi' ? 'हब न्यूनतम गारंटी मूल्य ₹11.00/किग्रा' : lang === 'ta' ? 'ஹப் குறைந்தபட்ச உத்தரவாத விலை ₹11.00/கிலோ' : 'FPO Guaranteed Floor Price: ₹11.00/kg'}
+            {lang === 'hi'
+              ? `हब न्यूनतम गारंटी मूल्य ₹${(priceData?.floorPriceRupees || 11.0).toFixed(2)}/किग्रा`
+              : lang === 'ta'
+              ? `ஹப் குறைந்தபட்ச உத்தரவாத விலை ₹${(priceData?.floorPriceRupees || 11.0).toFixed(2)}/கிலோ`
+              : `FPO Guaranteed Floor Price: ₹${(priceData?.floorPriceRupees || 11.0).toFixed(2)}/kg`}
           </p>
           <p className="mt-0.5 leading-relaxed">
             {lang === 'hi'
-              ? 'यदि बाजार गिरता है, तो हब आपको न्यूनतम ₹11/किग्रा देगा। भंडारण शुल्क केवल ₹0.20/किग्रा/दिन।'
+              ? `यदि बाजार गिरता है, तो हब आपको न्यूनतम ₹${priceData?.floorPriceRupees || 11}/किग्रा देगा। भंडारण शुल्क केवल ₹0.20/किग्रा/दिन।`
               : lang === 'ta'
-              ? 'சந்தை விலை குறைந்தாலும், ஹப் உங்களுக்கு குறைந்தபட்சம் ₹11/கிலோ தரும். சேமிப்பு கட்டணம் ₹0.20/கிலோ/நாள் மட்டுமே.'
-              : 'Even if mandi crashes tomorrow, you are protected by the ₹11/kg floor. Pod storage fee: ₹0.20/kg/day.'}
+              ? `சந்தை விலை குறைந்தாலும், ஹப் உங்களுக்கு குறைந்தபட்சம் ₹${priceData?.floorPriceRupees || 11}/கிலோ தரும். சேமிப்பு கட்டணம் ₹0.20/கிலோ/நாள் மட்டுமே.`
+              : `Even if mandi crashes tomorrow, you are protected by the ₹${priceData?.floorPriceRupees || 11}/kg floor. Pod storage fee: ₹0.20/kg/day.`}
           </p>
         </div>
       </div>

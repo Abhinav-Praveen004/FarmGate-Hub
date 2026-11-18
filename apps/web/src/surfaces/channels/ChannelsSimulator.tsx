@@ -60,8 +60,8 @@ export const ChannelsSimulator: React.FC = () => {
       lang === 'hi'
         ? 'फार्मगेट हब वॉयस सेवा में आपका स्वागत है। आज के टमाटर भाव के लिए 1 दबाएं। अपने लॉट की स्थिति जानने के लिए 2 दबाएं। ऑपरेटर से बात करने के लिए 9 दबाएं।'
         : lang === 'ta'
-        ? 'ஃபார்ம்கேட் ஹப் குரல் சேவைக்கு வரவேற்கிறோம். இன்றைய தக்காளி விலைக்கு 1ஐ அழுத்தவும். உங்கள் லாட்டின் நிலையை அறிய 2ஐ அழுத்தவும். ஆபரேட்டருடன் பேச 9ஐ அழுத்தவும்.'
-        : 'Welcome to FarmGate Hub Voice Advisory. Press 1 for Today\'s Price. Press 2 for Your Lots in Cool Pod. Press 9 to speak with Hub Operator Ravi.';
+          ? 'ஃபார்ம்கேட் ஹப் குரல் சேவைக்கு வரவேற்கிறோம். இன்றைய தக்காளி விலைக்கு 1ஐ அழுத்தவும். உங்கள் லாட்டின் நிலையை அறிய 2ஐ அழுத்தவும். ஆபரேட்டருடன் பேச 9ஐ அழுத்தவும்.'
+          : 'Welcome to FarmGate Hub Voice Advisory. Press 1 for Today\'s Price. Press 2 for Your Lots in Cool Pod. Press 9 to speak with Hub Operator Ravi.';
 
     setIvrTranscript([`[IVR System]: ${greeting}`]);
     speak(greeting, lang);
@@ -76,29 +76,29 @@ export const ChannelsSimulator: React.FC = () => {
         lang === 'hi'
           ? 'आज का मंडी भाव ₹9 प्रति किलो है। सत्यापित खरीदार बोली ₹14 है। सलाह: कूल पॉड में 1 दिन रखें।'
           : lang === 'ta'
-          ? 'இன்றைய மண்டி விலை கிலோவுக்கு ₹9. சரிபார்க்கப்பட்ட வாங்குபவர் விலை ₹14. அறிவுரை: கூல் பாலில் 1 நாள் வைக்கவும்.'
-          : 'Today\'s Mandi price is ₹9.00/kg. Verified buyer bid is ₹14.00/kg. Recommendation: Hold in Cool Pod for 1 day.';
+            ? 'இன்றைய மண்டி விலை கிலோவுக்கு ₹9. சரிபார்க்கப்பட்ட வாங்குபவர் விலை ₹14. அறிவுரை: கூல் பாலில் 1 நாள் வைக்கவும்.'
+            : 'Today\'s Mandi price is ₹9.00/kg. Verified buyer bid is ₹14.00/kg. Recommendation: Hold in Cool Pod for 1 day.';
     } else if (key === '2') {
       reply =
         lang === 'hi'
           ? 'आपका लॉट #214 कूल पॉड में 14 घंटे से सुरक्षित है। 78% खरीदार मैच मिला है।'
           : lang === 'ta'
-          ? 'உங்கள் லாட் #214 கூல் பாலில் 14 மணி நேரமாக உள்ளது. 78% வாங்குபவர் பொருத்தம் கிடைத்துள்ளது.'
-          : 'Your Lot #214 has been in the Cool Pod for 14 hours at 11.5°C. Matched with Annapurna Retail (78% fit).';
+            ? 'உங்கள் லாட் #214 கூல் பாலில் 14 மணி நேரமாக உள்ளது. 78% வாங்குபவர் பொருத்தம் கிடைத்துள்ளது.'
+            : 'Your Lot #214 has been in the Cool Pod for 14 hours at 11.5°C. Matched with Annapurna Retail (78% fit).';
     } else if (key === '9') {
       reply =
         lang === 'hi'
           ? 'कृपया प्रतीक्षा करें, आपकी कॉल कोलार हब ऑपरेटर रवि शंकर को जोड़ी जा रही है...'
           : lang === 'ta'
-          ? 'தயவுசெய்து காத்திருக்கவும், உங்கள் அழைப்பு கோலார் ஹப் ஆபரேட்டர் ரவி சங்கருடன் இணைக்கப்படுகிறது...'
-          : 'Connecting your call to Kolar Hub Operator Ravi Shankar...';
+            ? 'தயவுசெய்து காத்திருக்கவும், உங்கள் அழைப்பு கோலார் ஹப் ஆபரேட்டர் ரவி சங்கருடன் இணைக்கப்படுகிறது...'
+            : 'Connecting your call to Kolar Hub Operator Ravi Shankar...';
     } else {
       reply =
         lang === 'hi'
           ? 'अमान्य विकल्प। कृपया 1, 2 या 9 दबाएं।'
           : lang === 'ta'
-          ? 'தவறான தேர்வு. 1, 2 அல்லது 9ஐ அழுத்தவும்.'
-          : 'Invalid choice. Please press 1, 2, or 9.';
+            ? 'தவறான தேர்வு. 1, 2 அல்லது 9ஐ அழுத்தவும்.'
+            : 'Invalid choice. Please press 1, 2, or 9.';
     }
 
     setIvrTranscript((prev) => [...prev, `[Farmer Pressed]: ${key}`, `[IVR Response]: ${reply}`]);
@@ -132,9 +132,8 @@ export const ChannelsSimulator: React.FC = () => {
                 <button
                   key={l}
                   onClick={() => setLang(l)}
-                  className={`px-2 py-0.5 text-xs rounded font-medium transition-all ${
-                    lang === l ? 'bg-accent text-white font-bold' : 'text-ink-muted hover:text-ink'
-                  }`}
+                  className={`px-2 py-0.5 text-xs rounded font-medium transition-all ${lang === l ? 'bg-accent text-white font-bold' : 'text-ink-muted hover:text-ink'
+                    }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिन्दी' : 'தமிழ்'}
                 </button>
@@ -149,11 +148,10 @@ export const ChannelsSimulator: React.FC = () => {
         <div className="flex gap-2 border-b border-border pb-px">
           <button
             onClick={() => setActiveChannel('whatsapp')}
-            className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-all ${
-              activeChannel === 'whatsapp'
+            className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-all ${activeChannel === 'whatsapp'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-            }`}
+              }`}
           >
             <MessageSquare className="w-4 h-4" />
             <span>WhatsApp Business Bot</span>
@@ -161,11 +159,10 @@ export const ChannelsSimulator: React.FC = () => {
 
           <button
             onClick={() => setActiveChannel('ivr')}
-            className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-all ${
-              activeChannel === 'ivr'
+            className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-all ${activeChannel === 'ivr'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-            }`}
+              }`}
           >
             <Phone className="w-4 h-4" />
             <span>Toll-Free Voice IVR</span>
@@ -237,8 +234,8 @@ export const ChannelsSimulator: React.FC = () => {
                     {lang === 'hi'
                       ? `नमस्ते ${activePersona.name} जी! आपका टमाटर लॉट #214 कूल पॉड में सुरक्षित है।`
                       : lang === 'ta'
-                      ? `வணக்கம் ${activePersona.name}! உங்கள் தக்காளி லாட் #214 கூல் பாலில் பாதுகாப்பாக உள்ளது.`
-                      : `Namaste ${activePersona.name}! Your Lot #214 is safe in Cool Pod #01 (11.5°C).`}
+                        ? `வணக்கம் ${activePersona.name}! உங்கள் தக்காளி லாட் #214 கூல் பாலில் பாதுகாப்பாக உள்ளது.`
+                        : `Namaste ${activePersona.name}! Your Lot #214 is safe in Cool Pod #01 (11.5°C).`}
                   </p>
                   <span className="text-[10px] text-[#667781] block text-right">10:00 AM • ✓✓</span>
                 </div>
@@ -260,11 +257,10 @@ export const ChannelsSimulator: React.FC = () => {
                       </button>
                     )}
                     <div
-                      className={`p-3 rounded-lg shadow-sm max-w-[85%] text-xs whitespace-pre-line leading-relaxed ${
-                        msg.sender === 'FARMER'
+                      className={`p-3 rounded-lg shadow-sm max-w-[85%] text-xs whitespace-pre-line leading-relaxed ${msg.sender === 'FARMER'
                           ? 'bg-[#d9fdd3] text-[#111b21] rounded-tr-none'
                           : 'bg-white text-[#111b21] rounded-tl-none border border-black/5'
-                      }`}
+                        }`}
                     >
                       <p className="text-[#111b21]">{msg.body}</p>
                       <span className="text-[10px] text-[#667781] block text-right mt-1">
@@ -402,13 +398,12 @@ export const ChannelsSimulator: React.FC = () => {
                   ivrTranscript.map((t, idx) => (
                     <div
                       key={idx}
-                      className={`leading-relaxed ${
-                        t.startsWith('[Farmer')
+                      className={`leading-relaxed ${t.startsWith('[Farmer')
                           ? 'text-accent font-bold'
                           : t.startsWith('[IVR')
-                          ? 'text-ink'
-                          : 'text-ink-muted'
-                      }`}
+                            ? 'text-ink'
+                            : 'text-ink-muted'
+                        }`}
                     >
                       {t}
                     </div>

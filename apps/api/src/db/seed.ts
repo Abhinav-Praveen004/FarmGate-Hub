@@ -51,6 +51,12 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
       retailReferencePricePaisePerKg: 3500,
     },
     {
+      name: 'chilli',
+      floorPricePaisePerKg: 3200,
+      baselineMandiPricePaisePerKg: 2800,
+      retailReferencePricePaisePerKg: 7000,
+    },
+    {
       name: 'banana',
       floorPricePaisePerKg: 1600,
       baselineMandiPricePaisePerKg: 1300,
@@ -64,7 +70,7 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
     },
   ]).run();
 
-  // 2. Seed 14-day Mandi Price History for Tomato
+  // 2. Seed 14-day Mandi Price History for Crops
   const basePrices = [1200, 1150, 1100, 1050, 1000, 950, 920, 900, 880, 890, 910, 930, 910, 900];
   const mandiEntries = basePrices.map((price, idx) => ({
     id: `mandi_tom_${idx + 1}`,
@@ -72,6 +78,36 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
     date: `2026-11-${String(5 + idx).padStart(2, '0')}`,
     pricePaisePerKg: price,
   }));
+  // Mandi history for onion
+  const onionPrices = [1700, 1680, 1650, 1620, 1600, 1580, 1550, 1520, 1500, 1480, 1490, 1510, 1520, 1500];
+  onionPrices.forEach((price, idx) => {
+    mandiEntries.push({
+      id: `mandi_oni_${idx + 1}`,
+      crop: 'onion',
+      date: `2026-11-${String(5 + idx).padStart(2, '0')}`,
+      pricePaisePerKg: price,
+    });
+  });
+  // Mandi history for potato
+  const potatoPrices = [1350, 1320, 1300, 1280, 1260, 1240, 1220, 1210, 1200, 1190, 1200, 1210, 1220, 1200];
+  potatoPrices.forEach((price, idx) => {
+    mandiEntries.push({
+      id: `mandi_pot_${idx + 1}`,
+      crop: 'potato',
+      date: `2026-11-${String(5 + idx).padStart(2, '0')}`,
+      pricePaisePerKg: price,
+    });
+  });
+  // Mandi history for chilli
+  const chilliPrices = [3100, 3050, 3000, 2950, 2900, 2880, 2850, 2820, 2800, 2780, 2800, 2820, 2850, 2800];
+  chilliPrices.forEach((price, idx) => {
+    mandiEntries.push({
+      id: `mandi_chi_${idx + 1}`,
+      crop: 'chilli',
+      date: `2026-11-${String(5 + idx).padStart(2, '0')}`,
+      pricePaisePerKg: price,
+    });
+  });
   customDb.insert(schema.mandiPrices).values(mandiEntries).run();
 
   // 3. Seed 12 Farmers (Primary + demo cluster)
@@ -184,7 +220,45 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
   customDb.insert(schema.buyers).values(fullBuyers).run();
 
   // 5. Seed Buyer Orders
-  customDb.insert(schema.buyerOrders).values(SEED_BUYER_ORDERS).run();
+  customDb.insert(schema.buyerOrders).values([
+    ...SEED_BUYER_ORDERS,
+    {
+      id: 'order_onion_300kg',
+      buyerId: 'buyer_freshbite',
+      crop: 'onion',
+      grade: 'A',
+      quantityGrams: 300_000,
+      offeredPricePaisePerKg: 2200,
+      deliveryWindowHours: 24,
+      depositCleared: true,
+      status: 'open',
+      createdAt: '2026-11-18T01:00:00Z',
+    },
+    {
+      id: 'order_potato_500kg',
+      buyerId: 'buyer_sahyadri',
+      crop: 'potato',
+      grade: 'A',
+      quantityGrams: 500_000,
+      offeredPricePaisePerKg: 1700,
+      deliveryWindowHours: 24,
+      depositCleared: true,
+      status: 'open',
+      createdAt: '2026-11-18T01:30:00Z',
+    },
+    {
+      id: 'order_chilli_100kg',
+      buyerId: 'buyer_kisan_proc',
+      crop: 'chilli',
+      grade: 'A',
+      quantityGrams: 100_000,
+      offeredPricePaisePerKg: 4000,
+      deliveryWindowHours: 24,
+      depositCleared: true,
+      status: 'open',
+      createdAt: '2026-11-18T02:00:00Z',
+    },
+  ]).run();
 
   // 6. Seed Lots (including Lot #214 and Lot #198)
   const { quality: _q214, timeline: _t214, ...lot214Base } = SEED_LOT_214;
@@ -201,6 +275,78 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
       qualityJson: JSON.stringify(SEED_LOT_198.quality),
       timelineJson: JSON.stringify(SEED_LOT_198.timeline),
     },
+    {
+      id: 'lot_215',
+      lotNumber: 215,
+      farmerId: 'farmer_ramesh',
+      crop: 'onion',
+      weightGrams: 150_000,
+      grade: 'A',
+      status: 'in_pod',
+      intakePriceEstimatePaise: 2200,
+      finalSalePricePaisePerKg: undefined,
+      holdingLimitHours: 72,
+      receivedAt: '2026-11-17T18:00:00Z',
+      soldAt: undefined,
+      hoursInPod: 12,
+      qrCode: 'FGH-ANNUR-2026-LOT215',
+      qualityJson: JSON.stringify({ blemishPercent: 2, firmness: 5, sizeClass: 'medium', ripeness: 'dry' }),
+      timelineJson: JSON.stringify([
+        { timestamp: '2026-11-17T18:00:00Z', status: 'received', actor: 'Ravi (Hub Operator)', note: 'Weighed on digital scale: 150.0 kg' },
+        { timestamp: '2026-11-17T18:15:00Z', status: 'graded', actor: 'Ravi (Hub Operator)', note: 'Graded A: blemish 2%, firmness 5/5' },
+        { timestamp: '2026-11-17T18:20:00Z', status: 'in_pod', actor: 'System', note: 'Stored in Cool Pod Bay B-1. Hold decision requested.' },
+      ]),
+      advanceRequested: false,
+      advanceSettled: false,
+    },
+    {
+      id: 'lot_216',
+      lotNumber: 216,
+      farmerId: 'farmer_ramesh',
+      crop: 'potato',
+      weightGrams: 200_000,
+      grade: 'A',
+      status: 'in_pod',
+      intakePriceEstimatePaise: 1700,
+      finalSalePricePaisePerKg: undefined,
+      holdingLimitHours: 72,
+      receivedAt: '2026-11-17T19:00:00Z',
+      soldAt: undefined,
+      hoursInPod: 11,
+      qrCode: 'FGH-ANNUR-2026-LOT216',
+      qualityJson: JSON.stringify({ blemishPercent: 3, firmness: 4, sizeClass: 'large', ripeness: 'cured' }),
+      timelineJson: JSON.stringify([
+        { timestamp: '2026-11-17T19:00:00Z', status: 'received', actor: 'Ravi (Hub Operator)', note: 'Weighed on digital scale: 200.0 kg' },
+        { timestamp: '2026-11-17T19:15:00Z', status: 'graded', actor: 'Ravi (Hub Operator)', note: 'Graded A: blemish 3%, firmness 4/5' },
+        { timestamp: '2026-11-17T19:20:00Z', status: 'in_pod', actor: 'System', note: 'Stored in Cool Pod Bay B-2. Hold decision requested.' },
+      ]),
+      advanceRequested: false,
+      advanceSettled: false,
+    },
+    {
+      id: 'lot_217',
+      lotNumber: 217,
+      farmerId: 'farmer_ramesh',
+      crop: 'chilli',
+      weightGrams: 80_000,
+      grade: 'A',
+      status: 'in_pod',
+      intakePriceEstimatePaise: 4000,
+      finalSalePricePaisePerKg: undefined,
+      holdingLimitHours: 72,
+      receivedAt: '2026-11-17T20:00:00Z',
+      soldAt: undefined,
+      hoursInPod: 10,
+      qrCode: 'FGH-ANNUR-2026-LOT217',
+      qualityJson: JSON.stringify({ blemishPercent: 2, firmness: 5, sizeClass: 'medium', ripeness: 'fresh_green' }),
+      timelineJson: JSON.stringify([
+        { timestamp: '2026-11-17T20:00:00Z', status: 'received', actor: 'Ravi (Hub Operator)', note: 'Weighed on digital scale: 80.0 kg' },
+        { timestamp: '2026-11-17T20:15:00Z', status: 'graded', actor: 'Ravi (Hub Operator)', note: 'Graded A: blemish 2%, firmness 5/5' },
+        { timestamp: '2026-11-17T20:20:00Z', status: 'in_pod', actor: 'System', note: 'Stored in Cool Pod Bay C-1. Hold decision requested.' },
+      ]),
+      advanceRequested: false,
+      advanceSettled: false,
+    },
   ];
 
   // Additional lots across cluster to simulate full pod and collective loading (~40 lots)
@@ -208,7 +354,7 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
   const grades = ['A', 'B', 'C'] as const;
   const statuses = ['in_pod', 'in_pod', 'graded', 'sold', 'dispatched'] as const;
 
-  for (let i = 215; i <= 250; i++) {
+  for (let i = 218; i <= 250; i++) {
     const c = otherCrops[i % otherCrops.length];
     const g = grades[i % grades.length];
     const s = statuses[i % statuses.length];
@@ -334,7 +480,7 @@ export function runSeed(customDb = db, customSqlite = sqlite) {
 }
 
 // Auto-run if executed directly via CLI
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (process.argv[1] && (process.argv[1].includes('seed.ts') || process.argv[1].includes('seed.js'))) {
   console.log('Seeding FarmGate Hub SQLite database...');
   const res = runSeed();
   console.log(`Seeding complete: ${res.seededLots} lots populated.`);

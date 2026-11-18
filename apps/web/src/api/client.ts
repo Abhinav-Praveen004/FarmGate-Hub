@@ -77,7 +77,19 @@ export function useTodayPrice(crop = 'tomato') {
     recommendedAction: 'SELL' | 'HOLD' | 'CLOSE_CALL';
   }>({
     queryKey: ['price', crop],
-    queryFn: () => fetchJson(`/api/prices/today?crop=${encodeURIComponent(crop)}`),
+    queryFn: async () => {
+      const data = await fetchJson<any>(`/api/prices/today?crop=${encodeURIComponent(crop)}`);
+      return {
+        crop: data.crop || crop,
+        mandiPriceRupees: data.mandiPriceRupees ?? data.mandiPrice?.rupeesPerKg ?? 9.0,
+        buyerBidRupees: data.buyerBidRupees ?? data.bestBuyerBid?.rupeesPerKg ?? 14.0,
+        floorPriceRupees: data.floorPriceRupees ?? data.floorPrice?.rupeesPerKg ?? 11.0,
+        forecastLowRupees: data.forecastLowRupees ?? data.forecast1Day?.expectedLowRupeesPerKg ?? 13.0,
+        forecastHighRupees: data.forecastHighRupees ?? data.forecast1Day?.expectedHighRupeesPerKg ?? 15.0,
+        adviceSentence: data.adviceSentence ?? data.advice?.explanation ?? '',
+        recommendedAction: data.recommendedAction ?? data.advice?.recommendedAction ?? 'HOLD',
+      };
+    },
     staleTime: 10_000,
   });
 }
@@ -86,7 +98,14 @@ export function useTodayPrice(crop = 'tomato') {
 export function useFarmerLots(farmerId?: string) {
   return useQuery<ClientLot[]>({
     queryKey: ['lots', farmerId],
-    queryFn: () => fetchJson(`/api/lots${farmerId ? `?farmerId=${encodeURIComponent(farmerId)}` : ''}`),
+    queryFn: async () => {
+      const res = await fetchJson<any>(`/api/lots${farmerId ? `?farmerId=${encodeURIComponent(farmerId)}` : ''}`);
+      const rawLots = Array.isArray(res) ? res : res?.lots || [];
+      return rawLots.map((l: any) => ({
+        ...l,
+        status: (l.status || '').toUpperCase(),
+      }));
+    },
     staleTime: 5_000,
   });
 }
@@ -94,7 +113,13 @@ export function useFarmerLots(farmerId?: string) {
 export function useLot(lotId: string) {
   return useQuery<ClientLot>({
     queryKey: ['lot', lotId],
-    queryFn: () => fetchJson(`/api/lots/${encodeURIComponent(lotId)}`),
+    queryFn: async () => {
+      const l = await fetchJson<any>(`/api/lots/${encodeURIComponent(lotId)}`);
+      return {
+        ...l,
+        status: (l.status || '').toUpperCase(),
+      };
+    },
     enabled: Boolean(lotId),
   });
 }
@@ -108,19 +133,22 @@ export function useMakeLotDecision() {
       decision,
       holdHours,
       autoSellAtExpiry,
+      priceRupees,
     }: {
       lotId: string;
       decision: 'SELL' | 'HOLD';
       holdHours?: number;
       autoSellAtExpiry?: boolean;
+      priceRupees?: number;
     }) =>
       fetchJson(`/api/lots/${lotId}/decision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision, holdHours, autoSellAtExpiry }),
+        body: JSON.stringify({ action: decision, decision, holdHours, autoSellAtExpiry, priceRupees }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lots'] });
+      queryClient.invalidateQueries({ queryKey: ['hub'] });
     },
   });
 }
