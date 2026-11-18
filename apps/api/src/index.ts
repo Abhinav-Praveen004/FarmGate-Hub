@@ -13,6 +13,7 @@ import { channelsRouter } from './routes/channels.js';
 import { eventsRouter } from './routes/events.js';
 import { demoRouter } from './routes/demo.js';
 import { traceabilityRouter } from './routes/traceability.js';
+import { ttsRouter } from './routes/tts.js';
 
 export const app = new Hono();
 
@@ -161,6 +162,7 @@ app.route('/api/impact', impactRouter);
 app.route('/api/channels', channelsRouter);
 app.route('/api/events', eventsRouter);
 app.route('/api/traceability', traceabilityRouter);
+app.route('/api/tts', ttsRouter);
 app.route('/t', traceabilityRouter);
 
 // Start server if run directly

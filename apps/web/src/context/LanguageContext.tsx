@@ -81,6 +81,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Load and cache browser voices on mount and on voiceschanged event
   useEffect(() => {
@@ -111,70 +112,114 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const t = getTranslations(lang);
 
   const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      setIsSpeaking(false);
       utteranceRef.current = null;
     }
+    setIsSpeaking(false);
   }, []);
 
   const speak = useCallback((text: string, langOverride?: Language) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      setSpeechError('Web Speech API is not supported on this browser.');
-      return;
-    }
+    const targetLang = langOverride || lang;
 
-    // Cancel any existing speech
-    window.speechSynthesis.cancel();
+    // 1. Stop any currently playing audio or speech
+    stopSpeaking();
     setSpeechError(null);
 
-    const targetLang = langOverride || lang;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utteranceRef.current = utterance;
-
-    // Natural human voice attributes
-    utterance.lang = targetLang === 'hi' ? 'hi-IN' : targetLang === 'ta' ? 'ta-IN' : 'en-IN';
-    utterance.rate = 0.92; // Slightly relaxed, conversational pacing for high rural comprehension
-    utterance.pitch = 1.02; // Warm, friendly intonation (avoids robotic monotone)
-    utterance.volume = 1.0;
-
-    // Select the best available natural/neural voice matching the language family
-    const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
-    const bestVoice = selectBestVoice(currentVoices, targetLang);
-    if (bestVoice) {
-      utterance.voice = bestVoice;
-      setActiveVoiceName(bestVoice.name);
-    } else {
-      setActiveVoiceName(targetLang === 'hi' ? 'Hindi Natural' : targetLang === 'ta' ? 'Tamil Natural' : 'English Natural');
-    }
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      utteranceRef.current = null;
-    };
-
-    utterance.onerror = (e) => {
-      setIsSpeaking(false);
-      utteranceRef.current = null;
-      if (e.error !== 'canceled' && e.error !== 'interrupted') {
-        setSpeechError(t.common.unsupportedVoice);
+    // Browser SpeechSynthesis fallback
+    const fallbackToSpeechSynthesis = () => {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        setSpeechError('Web Speech API is not supported on this browser.');
+        return;
       }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utteranceRef.current = utterance;
+
+      utterance.lang = targetLang === 'hi' ? 'hi-IN' : targetLang === 'ta' ? 'ta-IN' : 'en-IN';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.02;
+      utterance.volume = 1.0;
+
+      const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+      const bestVoice = selectBestVoice(currentVoices, targetLang);
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+        setActiveVoiceName(bestVoice.name);
+      } else {
+        setActiveVoiceName(targetLang === 'ta' ? 'Tamil Voice' : targetLang === 'hi' ? 'Hindi Voice' : 'System Voice');
+      }
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        utteranceRef.current = null;
+      };
+      utterance.onerror = (e) => {
+        setIsSpeaking(false);
+        utteranceRef.current = null;
+        if (e.error !== 'canceled' && e.error !== 'interrupted') {
+          setSpeechError(t.common.unsupportedVoice);
+        }
+      };
+
+      setIsSpeaking(true);
+      window.speechSynthesis.speak(utterance);
     };
 
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
-  }, [lang, voices, t.common.unsupportedVoice]);
+    // 2. High-Fidelity Studio Neural Voice via API (guarantees 100% authentic Tamil & Hindi pronunciation)
+    try {
+      const audioUrl = `/api/tts/speak?lang=${targetLang}&text=${encodeURIComponent(text)}`;
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onplay = () => {
+        setIsSpeaking(true);
+        setActiveVoiceName(
+          targetLang === 'ta'
+            ? 'Tamil Studio Voice (குரல்)'
+            : targetLang === 'hi'
+            ? 'Hindi Studio Voice (आवाज़)'
+            : 'English Studio Voice'
+        );
+      };
+
+      audio.onended = () => {
+        setIsSpeaking(false);
+        audioRef.current = null;
+      };
+
+      audio.onerror = () => {
+        audioRef.current = null;
+        fallbackToSpeechSynthesis();
+      };
+
+      audio.play().catch(() => {
+        audioRef.current = null;
+        fallbackToSpeechSynthesis();
+      });
+    } catch {
+      fallbackToSpeechSynthesis();
+    }
+  }, [lang, voices, stopSpeaking, t.common.unsupportedVoice]);
 
   // Watchdog interval to detect when browser finishes speaking without onend
   useEffect(() => {
     if (!isSpeaking) return;
 
     const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      if (audioRef.current) {
+        if (audioRef.current.ended) {
+          setIsSpeaking(false);
+          audioRef.current = null;
+        }
+      } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
           setIsSpeaking(false);
         }
