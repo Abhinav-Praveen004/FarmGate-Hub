@@ -10,9 +10,7 @@
     "start": "vite --port 4000"
   },
   "dependencies": {
-    "@farmgate/shared": "*"
-  },
-  "devDependencies": {
+    "@farmgate/shared": "*",
     "vite": "^8.3.8"
   }
 }
