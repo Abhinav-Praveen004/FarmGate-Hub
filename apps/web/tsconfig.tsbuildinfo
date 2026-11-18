@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/pages/styleguide.tsx"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/api/client.ts","./src/context/democontext.tsx","./src/context/languagecontext.tsx","./src/pages/styleguide.tsx","./src/surfaces/farmer/farmerlayout.tsx","./src/surfaces/farmer/moneyscreen.tsx","./src/surfaces/farmer/mylotsscreen.tsx","./src/surfaces/farmer/rupeewaterfallscreen.tsx","./src/surfaces/farmer/todaypricescreen.tsx","./src/surfaces/farmer/whatsappdrawer.tsx"],"version":"5.9.3"}

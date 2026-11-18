@@ -38,3 +38,11 @@ Running log of completed tasks across project milestones.
 - [x] M3-T04: Scaffolded `apps/web` with Vite 8.3.8, Tailwind CSS, and React Router 7.
 - [x] M3-T05: Implemented `/styleguide` showcasing all 6 signature components with simulated toggles and metrics.
 - [x] M3-T06: Captured and verified headless browser screenshots at 1440px and 390px viewports (`docs/shots/`).
+- [x] M4-T01: Implemented `LanguageContext` supporting English (`en`), Hindi (`hi`), and Tamil (`ta`) with persistent choice and Web Speech API synthesis.
+- [x] M4-T02: Implemented `DemoContext` supporting persona switching (Ramesh, Murugan, Lakshmi), time warp (+1h, +6h, +14h, +24h), and real-time SSE listener.
+- [x] M4-T03: Implemented Screen 1 (`TodayPriceScreen`) with crop selector, ₹9 mandi vs ₹14 buyer bid (+56%), ₹11 floor protection, rule-based advice, and audio playback.
+- [x] M4-T04: Implemented Screen 2 (`MyLotsScreen`) with Lot #214 spotlight (120 kg, Grade A, 14h in pod), 78% buyer match breakdown modal, real QR generator for hub intake, and advance action.
+- [x] M4-T05: Implemented Screen 3 (`RupeeWaterfallScreen`) with Lot #198 transparent receipt (₹30 consumer, ₹13.50 [45%] farmer, ₹1.90 fee, ₹11.60 net), 33% typical-share comparison, and double-entry ledger audit.
+- [x] M4-T06: Implemented Screen 4 (`MoneyScreen`) with 24-hour SLA payout countdown clock and 50%–70% instant advance request flow with simulated UPI disbursement.
+- [x] M4-T07: Implemented Screen 5 (`WhatsAppDrawer`) simulating FarmGate Hub WhatsApp bot with quick replies (PRICE, LOTS, RECEIPT) and localized responses.
+- [x] M4-T08: Implemented `FarmerLayout` mobile shell with bottom navigation, top status bar, and verified mobile viewport rendering.
