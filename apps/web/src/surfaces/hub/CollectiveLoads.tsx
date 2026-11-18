@@ -41,6 +41,17 @@ const BUYER_ORDERS = [
     depositStatus: 'Escrow 100% Cleared',
     reliability: '95% on-time payment',
   },
+  {
+    id: 'ORD-773',
+    buyerName: 'Spiceland HoReCa Network',
+    crop: 'Chilli',
+    grade: 'A',
+    quantityKg: 120,
+    priceRupeesKg: 42.0,
+    deliveryWindow: 'Tomorrow 08:00',
+    depositStatus: 'Escrow 100% Cleared',
+    reliability: '99% on-time payment',
+  },
 ];
 
 const FARMER_NAMES: Record<string, string> = {
@@ -63,10 +74,11 @@ const FARMER_NAMES: Record<string, string> = {
 };
 
 const FALLBACK_LOTS = [
-  { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra', weightKg: 120, grade: 'A', podHours: 14, score: 78, isSoldByFarmer: true, status: 'SOLD' },
-  { id: 'lot_212', number: 212, farmer: 'Murugan K.', weightKg: 240, grade: 'A', podHours: 22, score: 82, isSoldByFarmer: false, status: 'IN_POD' },
-  { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', weightKg: 140, grade: 'A', podHours: 18, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
-  { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra', crop: 'tomato', weightKg: 120, grade: 'A', podHours: 14, score: 78, isSoldByFarmer: true, status: 'SOLD' },
+  { id: 'lot_212', number: 212, farmer: 'Murugan K.', crop: 'tomato', weightKg: 240, grade: 'A', podHours: 22, score: 82, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', crop: 'tomato', weightKg: 140, grade: 'A', podHours: 18, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', crop: 'tomato', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_215', number: 215, farmer: 'Ramesh Chandra', crop: 'chilli', weightKg: 120, grade: 'A', podHours: 4, score: 92, isSoldByFarmer: true, status: 'IN_POD' },
 ];
 
 export interface CollectiveLoadsProps {
@@ -88,14 +100,21 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
     rawLots && rawLots.length > 0
       ? rawLots
         .filter(
-          (l) =>
-            l.crop.toLowerCase() === activeOrder.crop.toLowerCase() &&
-            (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
+          (l) => {
+            const cropMatch =
+              l.crop.toLowerCase().includes(activeOrder.crop.toLowerCase()) ||
+              activeOrder.crop.toLowerCase().includes(l.crop.toLowerCase());
+            return (
+              cropMatch &&
+              (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
+            );
+          }
         )
         .map((l) => ({
           id: l.id,
           number: l.lotNumber,
           farmer: FARMER_NAMES[l.farmerId] || l.farmerId,
+          crop: l.crop,
           weightKg: Math.round(l.weightGrams / 1000),
           grade: l.grade,
           podHours: l.hoursInPod || 14,
@@ -216,7 +235,10 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                     key={order.id}
                     onClick={() => {
                       setSelectedOrderId(order.id);
-                      if (order.grade === 'B') {
+                      if (order.crop.toLowerCase().includes('chilli')) {
+                        const chilliLots = availableLots.filter((l) => l.crop?.toLowerCase().includes('chilli')).map((l) => l.id);
+                        setSelectedLotIds(chilliLots.length > 0 ? chilliLots : ['lot_215']);
+                      } else if (order.grade === 'B') {
                         setSelectedLotIds(['LOT-211']);
                       } else {
                         setSelectedLotIds(['LOT-214', 'LOT-212', 'LOT-210']);

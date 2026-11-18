@@ -40,6 +40,14 @@ const DEFAULT_POD_LOTS = [
   { id: 'lot_211', lotNumber: 211, farmerName: 'Lakshmi Devi', crop: 'Hybrid Tomato', weightKg: 140, grade: 'B', podHours: 28, matchScore: 75, matchBuyer: 'FreshBasket' },
 ];
 
+const formatCropName = (rawCrop?: string) => {
+  const c = (rawCrop || 'tomato').toLowerCase();
+  if (c.includes('chilli')) return 'Green Chilli (G4) 🌶️';
+  if (c.includes('onion')) return 'Red Onion (Nashik) 🧅';
+  if (c.includes('potato')) return 'Potato (Kufri) 🥔';
+  return 'Hybrid Tomato 🍅';
+};
+
 export const CoolPodBoard: React.FC = () => {
   const [telemetry, setTelemetry] = useState<any>({
     capacityKg: 10000,
@@ -118,7 +126,7 @@ export const CoolPodBoard: React.FC = () => {
               id: l.id,
               lotNumber: l.lotNumber,
               farmerName,
-              crop: 'Hybrid Tomato',
+              crop: formatCropName(l.crop),
               weightKg,
               grade,
               podHours,

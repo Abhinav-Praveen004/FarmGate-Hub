@@ -27,7 +27,7 @@ interface TodayPriceScreenProps {
 export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateToLots }) => {
   const { lang, t, speak, stopSpeaking, isSpeaking } = useLanguage();
   const { activePersona } = useDemo();
-  const [selectedCrop, setSelectedCrop] = useState<string>('tomato');
+  const [selectedCrop, setSelectedCrop] = useState<string>(() => localStorage.getItem('farmgate_farmer_active_crop') || 'tomato');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   // Pop-up modals state
@@ -260,6 +260,7 @@ export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateTo
               key={crop.id}
               onClick={() => {
                 setSelectedCrop(crop.id);
+                localStorage.setItem('farmgate_farmer_active_crop', crop.id);
                 setFeedbackMessage(null);
               }}
               className={`p-2.5 rounded-lg border text-center transition-all min-h-[56px] flex flex-col items-center justify-center ${

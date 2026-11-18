@@ -23,12 +23,22 @@ const SAMPLE_FARMERS = [
   { id: 'FARMER-004', name: 'Suresh Gowda', village: 'Hoskote', phone: '+91 98450 44556' },
 ];
 
+const AVAILABLE_CROPS = [
+  { id: 'tomato', name: 'Tomato', label: 'Hybrid Tomato', icon: '🍅', floorPrice: 11.0 },
+  { id: 'chilli', name: 'Green Chilli', label: 'Green Chilli (G4)', icon: '🌶️', floorPrice: 35.0 },
+  { id: 'onion', name: 'Red Onion', label: 'Red Onion (Nashik)', icon: '🧅', floorPrice: 18.0 },
+  { id: 'potato', name: 'Potato', label: 'Potato (Kufri)', icon: '🥔', floorPrice: 14.0 },
+];
+
 export interface IntakeWizardProps {
   onNavigateToPod?: () => void;
 }
 
 export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) => {
   const [selectedFarmerId, setSelectedFarmerId] = useState(SAMPLE_FARMERS[0].id);
+  const [selectedCropId, setSelectedCropId] = useState<string>(() => {
+    return localStorage.getItem('farmgate_farmer_active_crop') || 'tomato';
+  });
   const [cratesCount, setCratesCount] = useState(5);
   const [scaleWeightKg, setScaleWeightKg] = useState(120.4);
   const [isCapturingScale, setIsCapturingScale] = useState(false);
@@ -43,6 +53,7 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   const selectedFarmer = SAMPLE_FARMERS.find((f) => f.id === selectedFarmerId) || SAMPLE_FARMERS[0];
+  const currentCrop = AVAILABLE_CROPS.find((c) => c.id === selectedCropId) || AVAILABLE_CROPS[0];
 
   // Dynamic Rule-Based Suggested Grade
   const suggestedGrade = blemishPercent <= 5 && firmness >= 4 ? 'A' : blemishPercent <= 12 && firmness >= 2 ? 'B' : 'C';
@@ -81,7 +92,7 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmerId: selectedFarmer.id,
-          crop: 'tomato',
+          crop: selectedCropId,
           weightGrams: Math.round(scaleWeightKg * 1000),
           quality: {
             blemishPercent,
@@ -156,6 +167,35 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
                   </button>
                 );
               })}
+            </div>
+
+            {/* Crop Selector */}
+            <div className="pt-3 border-t border-border/70 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-ink">Produce Crop Brought:</span>
+                <span className="text-[11px] font-mono font-bold text-accent">Floor: ₹{currentCrop.floorPrice.toFixed(2)}/kg guaranteed</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {AVAILABLE_CROPS.map((crop) => {
+                  const isSelected = crop.id === selectedCropId;
+                  return (
+                    <button
+                      key={crop.id}
+                      type="button"
+                      onClick={() => setSelectedCropId(crop.id)}
+                      className={`p-2.5 rounded-lg border text-center transition-all flex flex-col items-center justify-center ${
+                        isSelected
+                          ? 'border-accent bg-accent/15 ring-2 ring-accent font-bold text-accent shadow-xs'
+                          : 'border-border bg-surface text-ink hover:border-border-strong'
+                      }`}
+                    >
+                      <span className="text-xl mb-1">{crop.icon}</span>
+                      <span className="text-xs font-semibold leading-tight">{crop.name}</span>
+                      <span className="text-[10px] text-ink-muted mt-0.5 font-mono">₹{crop.floorPrice}/kg</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -370,7 +410,7 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-black">GRADE {finalGrade}</span>
-                  <p className="text-[10px]">HYBRID TOMATO</p>
+                  <p className="text-[10px] uppercase font-bold">{currentCrop.label}</p>
                 </div>
               </div>
 
@@ -390,7 +430,7 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
                   </div>
                   <div>
                     <span className="text-gray-600 block text-[10px]">FPO FLOOR PRICE</span>
-                    <span className="font-bold">₹11.00 / KG GUARANTEED</span>
+                    <span className="font-bold">₹{currentCrop.floorPrice.toFixed(2)} / KG GUARANTEED</span>
                   </div>
                 </div>
 
@@ -414,7 +454,7 @@ export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) =
                   <span>Lot #{successLot.lotNumber} Successfully Stored in Cool Pod!</span>
                 </div>
                 <p className="font-mono text-[11px] text-ink-muted">
-                  Assigned Pod Slot: Bay 04 (11.5°C pre-cooled) • QR: {successLot.qrCode} • Guaranteed Floor: ₹11.00/kg
+                  Assigned Pod Slot: Bay 04 (11.5°C pre-cooled) • Produce: {currentCrop.name} {currentCrop.icon} • QR: {successLot.qrCode} • Guaranteed Floor: ₹{currentCrop.floorPrice.toFixed(2)}/kg
                 </p>
 
                 {onNavigateToPod && (
