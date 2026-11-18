@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge, Button } from '@farmgate/ui';
 import { useFarmerLots } from '../../api/client';
 import {
@@ -11,6 +12,9 @@ import {
   FileSpreadsheet,
   AlertCircle,
   Clock,
+  CreditCard,
+  ExternalLink,
+  RotateCcw,
 } from 'lucide-react';
 import { formatRupees, formatWeightKg } from '@farmgate/shared';
 
@@ -65,7 +69,11 @@ const FALLBACK_LOTS = [
   { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
 ];
 
-export const CollectiveLoads: React.FC = () => {
+export interface CollectiveLoadsProps {
+  onNavigateToPayouts?: () => void;
+}
+
+export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPayouts }) => {
   const [selectedOrderId, setSelectedOrderId] = useState<string>('ORD-771');
   const [selectedLotIds, setSelectedLotIds] = useState<string[]>(['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
   const [isDispatching, setIsDispatching] = useState(false);
@@ -79,22 +87,22 @@ export const CollectiveLoads: React.FC = () => {
   const availableLots =
     rawLots && rawLots.length > 0
       ? rawLots
-          .filter(
-            (l) =>
-              l.crop.toLowerCase() === activeOrder.crop.toLowerCase() &&
-              (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
-          )
-          .map((l) => ({
-            id: l.id,
-            number: l.lotNumber,
-            farmer: FARMER_NAMES[l.farmerId] || l.farmerId,
-            weightKg: Math.round(l.weightGrams / 1000),
-            grade: l.grade,
-            podHours: l.hoursInPod || 14,
-            score: l.buyerMatchScore || 78,
-            status: l.status.toUpperCase(),
-            isSoldByFarmer: l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'DISPATCHED' || l.status.toUpperCase() === 'PAID',
-          }))
+        .filter(
+          (l) =>
+            l.crop.toLowerCase() === activeOrder.crop.toLowerCase() &&
+            (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
+        )
+        .map((l) => ({
+          id: l.id,
+          number: l.lotNumber,
+          farmer: FARMER_NAMES[l.farmerId] || l.farmerId,
+          weightKg: Math.round(l.weightGrams / 1000),
+          grade: l.grade,
+          podHours: l.hoursInPod || 14,
+          score: l.buyerMatchScore || 78,
+          status: l.status.toUpperCase(),
+          isSoldByFarmer: l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'DISPATCHED' || l.status.toUpperCase() === 'PAID',
+        }))
       : FALLBACK_LOTS;
 
   const toggleLot = (id: string) => {
@@ -214,11 +222,10 @@ export const CollectiveLoads: React.FC = () => {
                         setSelectedLotIds(['LOT-214', 'LOT-212', 'LOT-210']);
                       }
                     }}
-                    className={`w-full p-4 rounded-xl border text-left transition-all ${
-                      isSelected
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${isSelected
                         ? 'border-accent bg-accent/5 ring-1 ring-accent'
                         : 'border-border bg-surface hover:border-border-strong'
-                    }`}
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -277,17 +284,16 @@ export const CollectiveLoads: React.FC = () => {
                   <div
                     key={lot.id}
                     onClick={() => toggleLot(lot.id)}
-                    className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
-                      isSelected
+                    className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${isSelected
                         ? 'border-accent bg-accent/10 ring-1 ring-accent'
                         : 'border-border bg-surface hover:border-border-strong'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="w-4 h-4 accent-accent rounded"
                       />
                       <div>
@@ -344,37 +350,112 @@ export const CollectiveLoads: React.FC = () => {
               </div>
             </div>
 
-            {/* Manifest Success Box */}
+            {/* Manifest Success Box & What's Next Guidance */}
             {dispatchedManifest && (
-              <div className="p-4 bg-accent/10 border border-accent/30 rounded-lg space-y-2 animate-fadeIn text-xs">
-                <div className="flex items-center gap-2 font-bold text-accent">
-                  <CheckCircle2 className="w-5 h-5 shrink-0" />
-                  <span>Collective Load #{dispatchedManifest.loadNumber} Dispatched Successfully!</span>
+              <div className="p-4 bg-emerald-50/90 border-2 border-emerald-500/40 rounded-xl space-y-3.5 animate-fadeIn text-xs shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-emerald-900 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span>Collective Load #{dispatchedManifest.loadNumber} Dispatched Successfully!</span>
+                  </div>
+                  <Badge variant="success" size="sm">IN TRANSIT</Badge>
                 </div>
-                <div className="text-ink-muted space-y-1 font-mono text-[11px]">
-                  <p>Buyer: {dispatchedManifest.buyer} ({dispatchedManifest.totalWeightKg} kg)</p>
-                  <p className="text-accent font-semibold">
-                    ✓ 24-Hour Payout SLA Activated for all {dispatchedManifest.lotsCount} participating farmers!
+
+                <div className="text-ink-muted space-y-1 font-mono text-[11px] bg-white p-3 rounded-lg border border-emerald-200">
+                  <p><strong>Wholesale Buyer:</strong> {dispatchedManifest.buyer} ({dispatchedManifest.totalWeightKg} kg @ ₹{activeOrder.priceRupeesKg}/kg)</p>
+                  <p className="text-emerald-700 font-bold">
+                    ✓ 24-Hour Payout SLA Activated ({dispatchedManifest.lotsCount} participating lots queued)
                   </p>
                   <p>✓ Automated WhatsApp notification sent to Ramesh Chandra, Murugan K., Suresh Gowda.</p>
+                </div>
+
+                {/* Downstream Actions Across Modules */}
+                <div className="pt-2 border-t border-emerald-200/80 space-y-2">
+                  <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wider block">
+                    What Happens Next in the Flow:
+                  </span>
+
+                  {/* Primary Next Action: Payouts Queue */}
+                  {onNavigateToPayouts ? (
+                    <Button
+                      variant="primary"
+                      onClick={onNavigateToPayouts}
+                      className="w-full min-h-[46px] font-bold text-xs flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white shadow-sm"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Step 6: Open Advances & Payouts Queue (SLA Timer Active) →</span>
+                    </Button>
+                  ) : (
+                    <a
+                      href="#payouts"
+                      className="w-full min-h-[46px] font-bold text-xs flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-sm"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Step 6: Open Advances & Payouts Queue →</span>
+                    </a>
+                  )}
+
+                  {/* Secondary Quick Links Across Other Modules */}
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    <Link
+                      to="/farmer"
+                      className="p-2.5 bg-white rounded-lg border border-border text-center hover:border-accent hover:shadow-xs transition-all flex flex-col items-center justify-center text-[10px] font-semibold text-ink group"
+                    >
+                      <span className="text-accent group-hover:underline flex items-center gap-1">
+                        Farmer Receipt ↗
+                      </span>
+                      <span className="text-ink-muted text-[9px] font-normal">Screen 3 (UTR)</span>
+                    </Link>
+
+                    <Link
+                      to="/buyer"
+                      className="p-2.5 bg-white rounded-lg border border-border text-center hover:border-accent hover:shadow-xs transition-all flex flex-col items-center justify-center text-[10px] font-semibold text-ink group"
+                    >
+                      <span className="text-accent group-hover:underline flex items-center gap-1">
+                        Buyer Portal ↗
+                      </span>
+                      <span className="text-ink-muted text-[9px] font-normal">Consignment Tracked</span>
+                    </Link>
+
+                    <Link
+                      to="/t/FGH-ANNUR-2026-LOT214"
+                      className="p-2.5 bg-white rounded-lg border border-border text-center hover:border-accent hover:shadow-xs transition-all flex flex-col items-center justify-center text-[10px] font-semibold text-ink group"
+                    >
+                      <span className="text-accent group-hover:underline flex items-center gap-1">
+                        Traceability ↗
+                      </span>
+                      <span className="text-ink-muted text-[9px] font-normal">Dispatch Timeline</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Confirm Dispatch Action */}
-            <Button
-              variant="primary"
-              onClick={handleConfirmDispatch}
-              disabled={isDispatching || selectedLotIds.length === 0}
-              className="w-full min-h-[50px] font-bold text-sm flex items-center justify-center gap-2"
-            >
-              <Truck className="w-5 h-5" />
-              <span>
-                {isDispatching
-                  ? 'Dispatching Load & Triggering SLA Clocks...'
-                  : `Confirm Sale & Dispatch Load #CL-04 (${totalWeightKg} kg)`}
-              </span>
-            </Button>
+            {/* Confirm Dispatch Action or Reset */}
+            {dispatchedManifest ? (
+              <Button
+                variant="outline"
+                onClick={() => setDispatchedManifest(null)}
+                className="w-full min-h-[44px] font-semibold text-xs flex items-center justify-center gap-2 border-border text-ink-muted hover:text-ink"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Assemble Another Consignment</span>
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={handleConfirmDispatch}
+                disabled={isDispatching || selectedLotIds.length === 0}
+                className="w-full min-h-[50px] font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <Truck className="w-5 h-5" />
+                <span>
+                  {isDispatching
+                    ? 'Dispatching Load & Triggering SLA Clocks...'
+                    : `Confirm Sale & Dispatch Load #CL-04 (${totalWeightKg} kg)`}
+                </span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

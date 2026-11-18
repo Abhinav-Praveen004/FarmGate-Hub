@@ -260,11 +260,11 @@ hubRouter.post('/loads/:id/confirm', async (c) => {
         soldAt: nowIso,
         timelineJson: JSON.stringify(timeline),
       })
-      .where(eq(schema.lots.id, lId))
+      .where(eq(schema.lots.id, lot.id))
       .run();
 
     // Check if farmer had an advance
-    const advance = db.select().from(schema.advances).where(eq(schema.advances.lotId, lId)).get();
+    const advance = db.select().from(schema.advances).where(eq(schema.advances.lotId, lot.id)).get();
     const advanceRecoveredPaise = advance?.status === 'approved' ? advance.approvedAmountPaise || 0 : 0;
 
     const weightKg = lot.weightGrams / 1000;
