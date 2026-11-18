@@ -52,4 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 700);
     });
   }
+
+  // 3. Local standalone fallback (when running directly on port 4000 without gateway)
+  if (window.location.port === '4000') {
+    document.querySelectorAll('a[href^="/farmer"], a[href^="/hub"], a[href^="/buyer"], a[href^="/impact"], a[href^="/styleguide"], a[href^="/t/"]').forEach((a) => {
+      a.href = 'http://localhost:5173' + a.getAttribute('href');
+    });
+    document.querySelectorAll('a[href="/launcher"]').forEach((a) => {
+      a.href = 'http://localhost:8080';
+    });
+  }
 });

@@ -1,16 +1,20 @@
 /**
  * Unified Production & Gateway Server for FarmGate Hub
  * 
- * Serves / Proxies:
- *  - Port 8080: Unified Gateway Portal (Launcher, and reverse proxy for all paths)
- *  - Port 4000: Investor Pitch Site (if not already running)
- *  - Port 5173: Frontend Web App (if not already running)
+ * Supports:
+ *  - Primary Server (process.env.PORT || 8080):
+ *      / -> Investor Pitch Site (apps/site/dist)
+ *      /farmer, /hub, /buyer, /impact, /channels, /styleguide, /t/* -> FarmGate Web App (apps/web/dist)
+ *      /launcher -> Unified System Launcher
+ *      /api/*, /health -> Hono API Backend (port 8787)
+ *  - Standalone Dev fallbacks on port 4000 and 5173 (if free)
  */
 
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,38 +33,16 @@ const MIME_TYPES = {
   '.woff': 'font/woff',
 };
 
-function serveStatic(dir, spaFallback = false) {
-  return (req, res) => {
-    const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    let pathname = decodeURIComponent(parsedUrl.pathname);
-
-    let filePath = path.join(dir, pathname === '/' ? 'index.html' : pathname);
-
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      const ext = path.extname(filePath).toLowerCase();
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': contentType });
-      fs.createReadStream(filePath).pipe(res);
-      return;
-    }
-
-    if (spaFallback) {
-      const indexPath = path.join(dir, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        fs.createReadStream(indexPath).pipe(res);
-        return;
-      }
-    }
-
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('404 Not Found');
-  };
+function sendFile(res, filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': contentType });
+  fs.createReadStream(filePath).pipe(res);
 }
 
 function proxyRequest(req, res, targetPort) {
   const proxyReq = http.request(
-    `http://localhost:${targetPort}${req.url}`,
+    `http://127.0.0.1:${targetPort}${req.url}`,
     {
       method: req.method,
       headers: req.headers,
@@ -72,66 +54,38 @@ function proxyRequest(req, res, targetPort) {
   );
   proxyReq.on('error', (err) => {
     res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<h3>Service on port ${targetPort} is currently connecting... (${err.message})</h3><p><a href="/">Return to Gateway</a></p>`);
+    res.end(`<h3>API service is initializing... (${err.message})</h3><p>Please refresh in 2 seconds or <a href="/">return to home</a>.</p>`);
   });
   req.pipe(proxyReq);
 }
 
-function listenSafe(server, port, label, callback) {
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`  ℹ [${label}] Port ${port} is already active.`);
-    } else {
-      console.error(`  [${label}] Error:`, err);
+function ensureApiProcess() {
+  const checkReq = http.get('http://127.0.0.1:8787/health', (res) => {
+    if (res.statusCode === 200) {
+      console.log('  ✓ [API Backend]     Active on http://127.0.0.1:8787');
     }
   });
-  server.listen(port, () => {
-    if (callback) callback();
+
+  checkReq.on('error', () => {
+    console.log('  ⚡ [API Backend]     Starting on port 8787 via tsx...');
+    const isWindows = process.platform === 'win32';
+    const npxCmd = isWindows ? 'npx.cmd' : 'npx';
+    const apiProc = spawn(npxCmd, ['tsx', 'apps/api/src/index.ts'], {
+      cwd: __dirname,
+      stdio: 'inherit',
+      env: { ...process.env, PORT: '8787', API_PORT: '8787' },
+    });
+
+    apiProc.on('error', (err) => {
+      console.error('Failed to spawn API server:', err);
+    });
+
+    process.on('exit', () => apiProc.kill());
   });
 }
 
-async function startUnifiedServer() {
-  console.log('================================================================');
-  console.log('  FarmGate Hub Unified Gateway Starting...');
-  console.log('================================================================');
-
-  const siteDist = path.join(__dirname, 'apps', 'site', 'dist');
-  const webDist = path.join(__dirname, 'apps', 'web', 'dist');
-
-  const siteDir = fs.existsSync(siteDist) ? siteDist : path.join(__dirname, 'apps', 'site');
-  const webDir = fs.existsSync(webDist) ? webDist : path.join(__dirname, 'apps', 'web');
-
-  // 1. Standalone Pitch Site Server on Port 4000 (safe bind)
-  const siteHandler = serveStatic(siteDir, false);
-  const siteServer = http.createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    siteHandler(req, res);
-  });
-  listenSafe(siteServer, 4000, 'Pitch Site', () => {
-    console.log('  ✓ [Pitch Site]      http://localhost:4000');
-  });
-
-  // 2. Standalone Web App Server on Port 5173 (safe bind)
-  const webHandler = serveStatic(webDir, true);
-  const webServer = http.createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    if (req.url.startsWith('/api')) {
-      proxyRequest(req, res, 8787);
-      return;
-    }
-    webHandler(req, res);
-  });
-  listenSafe(webServer, 5173, 'Web App', () => {
-    console.log('  ✓ [Web App]         http://localhost:5173');
-  });
-
-  // 3. Unified Gateway Portal on Port 8080 (Primary Launcher & Reverse Proxy)
-  const gatewayServer = http.createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    // Root launcher HTML page
-    if (req.url === '/' || req.url === '/index.html') {
-      const html = `<!DOCTYPE html>
+function renderLauncherHtml() {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -153,58 +107,58 @@ async function startUnifiedServer() {
 </head>
 <body>
   <div class="container">
-    <span class="badge">PROTOTYPE READY • PORT 8080 GATEWAY</span>
+    <span class="badge">PROTOTYPE READY • UNIFIED GATEWAY</span>
     <h1>FarmGate Hub Launcher</h1>
-    <p>All micro-hub services, mobile interfaces, and simulated hardware adapters are running in this unified instance.</p>
+    <p>All micro-hub surfaces, mobile interfaces, and simulated hardware adapters are accessible from this deployment.</p>
     
     <div class="grid">
-      <a class="card" href="http://localhost:4000" target="_blank">
-        <span class="badge" style="background: #2563eb;">PORT 4000</span>
+      <a class="card" href="/">
+        <span class="badge" style="background: #2563eb;">PITCH SITE</span>
         <div class="title">Investor Pitch Site →</div>
         <div class="desc">Public pitch page with anti-slop copy, interactive leak simulator, and seed ask.</div>
-        <span class="port-link">http://localhost:4000</span>
+        <span class="port-link">/ (Homepage)</span>
       </a>
-      <a class="card" href="http://localhost:5173/farmer" target="_blank">
-        <span class="badge">PORT 5173</span>
+      <a class="card" href="/farmer">
+        <span class="badge">MOBILE APP</span>
         <div class="title">Mobile Farmer App →</div>
         <div class="desc">Screens 1-4 (Today's Price, Lots, Rupee Waterfall, Money) + WhatsApp drawer.</div>
-        <span class="port-link">http://localhost:5173/farmer</span>
+        <span class="port-link">/farmer</span>
       </a>
-      <a class="card" href="http://localhost:5173/hub" target="_blank">
-        <span class="badge">PORT 5173</span>
+      <a class="card" href="/hub">
+        <span class="badge">OPERATOR</span>
         <div class="title">Hub Operator Console →</div>
         <div class="desc">Digital scale capture, 10-Tonne Cool Pod telemetry, collective load builder, payouts.</div>
-        <span class="port-link">http://localhost:5173/hub</span>
+        <span class="port-link">/hub</span>
       </a>
-      <a class="card" href="http://localhost:5173/impact" target="_blank">
-        <span class="badge">PORT 5173</span>
+      <a class="card" href="/impact">
+        <span class="badge">INVESTOR</span>
         <div class="title">Impact & Investor Dashboard →</div>
         <div class="desc">5 core KPIs, per-tonne economics (+27.2%), 4-year cohort model, sensitivity sliders.</div>
-        <span class="port-link">http://localhost:5173/impact</span>
+        <span class="port-link">/impact</span>
       </a>
-      <a class="card" href="http://localhost:5173/buyer" target="_blank">
-        <span class="badge" style="background: #d97706;">PORT 5173</span>
+      <a class="card" href="/buyer">
+        <span class="badge" style="background: #d97706;">BUYER PORTAL</span>
         <div class="title">Buyer Wholesale Portal →</div>
         <div class="desc">Graded wholesale catalog, 100% escrow lock, live cold-chain dispatch tracking.</div>
-        <span class="port-link">http://localhost:5173/buyer</span>
+        <span class="port-link">/buyer</span>
       </a>
-      <a class="card" href="http://localhost:5173/t/LOT-214" target="_blank">
-        <span class="badge" style="background: #059669;">PORT 5173</span>
+      <a class="card" href="/t/FGH-ANNUR-2026-LOT214">
+        <span class="badge" style="background: #059669;">QR CERTIFICATE</span>
         <div class="title">Public Traceability Certificate →</div>
         <div class="desc">Provenance audit trail, farmer 45% fair share proof, 73% lower waste guarantee.</div>
-        <span class="port-link">http://localhost:5173/t/LOT-214</span>
+        <span class="port-link">/t/FGH-ANNUR-2026-LOT214</span>
       </a>
-      <a class="card" href="http://localhost:5173/channels" target="_blank">
-        <span class="badge" style="background: #475569;">PORT 5173</span>
+      <a class="card" href="/channels">
+        <span class="badge" style="background: #475569;">CHANNELS</span>
         <div class="title">Channels Simulator (WhatsApp / IVR) →</div>
         <div class="desc">Interactive 2-way WhatsApp Business bot and toll-free voice keypad with Web Speech.</div>
-        <span class="port-link">http://localhost:5173/channels</span>
+        <span class="port-link">/channels</span>
       </a>
-      <a class="card" href="http://localhost:8787" target="_blank">
-        <span class="badge" style="background: #7c3aed;">API • PORT 8787</span>
-        <div class="title">Hono API & SSE Explorer →</div>
-        <div class="desc">REST endpoints, SQLite Drizzle schema, and Server-Sent Events stream.</div>
-        <span class="port-link">http://localhost:8787</span>
+      <a class="card" href="/api/prices/today">
+        <span class="badge" style="background: #7c3aed;">API ENGINE</span>
+        <div class="title">Live Backend API →</div>
+        <div class="desc">REST endpoints, SQLite Drizzle schema, and neural voice stream.</div>
+        <span class="port-link">/api/prices/today</span>
       </a>
     </div>
 
@@ -214,34 +168,157 @@ async function startUnifiedServer() {
   </div>
 </body>
 </html>`;
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(html);
-      return;
-    }
+}
 
-    // Proxy API calls directly to port 8787
-    if (req.url.startsWith('/api') || req.url.startsWith('/health')) {
+function listenSafe(server, port, label, callback) {
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`  ℹ [${label}] Port ${port} is already active.`);
+    } else {
+      console.error(`  [${label}] Error:`, err);
+    }
+  });
+  server.listen(port, '0.0.0.0', () => {
+    if (callback) callback();
+  });
+}
+
+async function startUnifiedServer() {
+  console.log('================================================================');
+  console.log('  FarmGate Hub Unified Server Starting...');
+  console.log('================================================================');
+
+  const siteDist = path.join(__dirname, 'apps', 'site', 'dist');
+  const webDist = path.join(__dirname, 'apps', 'web', 'dist');
+
+  const siteIndex = path.join(siteDist, 'index.html');
+  const webIndex = path.join(webDist, 'index.html');
+
+  // 1. Ensure API backend is running
+  ensureApiProcess();
+
+  // 2. Primary Unified Server (Listens on process.env.PORT or 8080)
+  const primaryPort = Number(process.env.PORT) || 8080;
+
+  const primaryServer = http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const pathname = decodeURIComponent(parsedUrl.pathname);
+
+    // API & Health checks -> Proxy to Hono API (port 8787)
+    if (pathname.startsWith('/api') || pathname.startsWith('/health')) {
       proxyRequest(req, res, 8787);
       return;
     }
 
-    // Proxy pitch site calls if requested under /site
-    if (req.url.startsWith('/site')) {
-      req.url = req.url.replace(/^\/site/, '') || '/';
-      proxyRequest(req, res, 4000);
+    // Launcher directory page
+    if (pathname === '/launcher' || pathname === '/launcher.html') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(renderLauncherHtml());
       return;
     }
 
-    // All other paths (/farmer, /hub, /impact, /buyer, /channels, /sources, /t/*, /styleguide, assets) proxy to web app
-    proxyRequest(req, res, 5173);
+    // Web App SPA routes: /farmer, /hub, /buyer, /impact, /channels, /styleguide, /t/*
+    const webAppRoutes = ['/farmer', '/hub', '/buyer', '/impact', '/channels', '/styleguide', '/t/'];
+    if (webAppRoutes.some((route) => pathname === route || pathname.startsWith(route))) {
+      if (fs.existsSync(webIndex)) {
+        sendFile(res, webIndex);
+        return;
+      }
+    }
+
+    // Check assets in web dist first (/assets/...)
+    if (pathname.startsWith('/assets/')) {
+      const webAssetPath = path.join(webDist, pathname);
+      if (fs.existsSync(webAssetPath) && fs.statSync(webAssetPath).isFile()) {
+        sendFile(res, webAssetPath);
+        return;
+      }
+      const siteAssetPath = path.join(siteDist, pathname);
+      if (fs.existsSync(siteAssetPath) && fs.statSync(siteAssetPath).isFile()) {
+        sendFile(res, siteAssetPath);
+        return;
+      }
+    }
+
+    // Check static files in apps/site/dist (e.g. /, /style.css, /app.js, images)
+    const siteFilePath = path.join(siteDist, pathname === '/' ? 'index.html' : pathname);
+    if (fs.existsSync(siteFilePath) && fs.statSync(siteFilePath).isFile()) {
+      sendFile(res, siteFilePath);
+      return;
+    }
+
+    // Check static files in apps/web/dist
+    const webFilePath = path.join(webDist, pathname);
+    if (fs.existsSync(webFilePath) && fs.statSync(webFilePath).isFile()) {
+      sendFile(res, webFilePath);
+      return;
+    }
+
+    // Default root -> Pitch site
+    if (pathname === '/' || pathname === '/index.html') {
+      if (fs.existsSync(siteIndex)) {
+        sendFile(res, siteIndex);
+        return;
+      }
+    }
+
+    // SPA fallback for any deep web route
+    if (fs.existsSync(webIndex)) {
+      sendFile(res, webIndex);
+      return;
+    }
+
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found');
   });
 
-  listenSafe(gatewayServer, 8080, 'Gateway Portal', () => {
-    console.log('  ✓ [Gateway Portal]  http://localhost:8080');
-    console.log('================================================================');
-    console.log('  All services connected and ready!');
+  listenSafe(primaryServer, primaryPort, 'Unified Gateway', () => {
+    console.log(`  ✓ [Unified Gateway] http://localhost:${primaryPort}`);
+    console.log(`    ├── Homepage / Pitch Site:  http://localhost:${primaryPort}/`);
+    console.log(`    ├── Farmer Mobile App:      http://localhost:${primaryPort}/farmer`);
+    console.log(`    ├── Hub Operator Console:   http://localhost:${primaryPort}/hub`);
+    console.log(`    ├── Buyer Wholesale Portal: http://localhost:${primaryPort}/buyer`);
+    console.log(`    ├── QR Traceability Cert:   http://localhost:${primaryPort}/t/FGH-ANNUR-2026-LOT214`);
+    console.log(`    └── System Launcher:        http://localhost:${primaryPort}/launcher`);
     console.log('================================================================\n');
   });
+
+  // 3. In non-production local environments, safely bind ports 4000 and 5173 if not active
+  if (process.env.NODE_ENV !== 'production' && primaryPort !== 4000 && primaryPort !== 5173) {
+    const siteServer = http.createServer((req, res) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const filePath = path.join(siteDist, parsedUrl.pathname === '/' ? 'index.html' : parsedUrl.pathname);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        sendFile(res, filePath);
+      } else if (fs.existsSync(siteIndex)) {
+        sendFile(res, siteIndex);
+      } else {
+        res.writeHead(404).end('Not Found');
+      }
+    });
+    listenSafe(siteServer, 4000, 'Pitch Site Standalone');
+
+    const webServer = http.createServer((req, res) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      if (parsedUrl.pathname.startsWith('/api') || parsedUrl.pathname.startsWith('/health')) {
+        proxyRequest(req, res, 8787);
+        return;
+      }
+      const filePath = path.join(webDist, parsedUrl.pathname);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        sendFile(res, filePath);
+      } else if (fs.existsSync(webIndex)) {
+        sendFile(res, webIndex);
+      } else {
+        res.writeHead(404).end('Not Found');
+      }
+    });
+    listenSafe(webServer, 5173, 'Web App Standalone');
+  }
 }
 
 startUnifiedServer();

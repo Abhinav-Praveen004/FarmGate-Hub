@@ -17,9 +17,9 @@ import { ttsRouter } from './routes/tts.js';
 
 export const app = new Hono();
 
-// Enable CORS for web app (5173) and static pitch site (4000)
+// Enable CORS for web app and pitch site across all environments
 app.use('*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:4000', 'http://127.0.0.1:5173', 'http://127.0.0.1:4000'],
+  origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -166,7 +166,7 @@ app.route('/api/tts', ttsRouter);
 app.route('/t', traceabilityRouter);
 
 // Start server if run directly
-const port = 8787;
+const port = Number(process.env.API_PORT) || 8787;
 if (process.env.NODE_ENV !== 'test') {
   console.log(`FarmGate Hub API starting on port ${port}...`);
   serve({
