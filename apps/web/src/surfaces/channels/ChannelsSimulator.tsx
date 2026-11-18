@@ -114,7 +114,7 @@ export const ChannelsSimulator: React.FC = () => {
   return (
     <div className="min-h-screen bg-bg text-ink pb-16">
       {/* Sub-header Banner */}
-      <div className="bg-surface-elevated border-b border-border py-3 px-4 sm:px-6 shadow-sm sticky top-12 z-30">
+      <div className="bg-surface-elevated border-b border-border py-3 px-4 sm:px-6 shadow-sm sticky top-14 z-30">
         <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">

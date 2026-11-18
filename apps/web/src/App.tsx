@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from './context/LanguageContext.js';
 import { DemoProvider } from './context/DemoContext.js';
@@ -21,6 +21,72 @@ const queryClient = new QueryClient({
   },
 });
 
+const TopNav: React.FC = () => {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  const NAV_ITEMS = [
+    { label: 'Farmer App', path: '/farmer', isActive: pathname.startsWith('/farmer') },
+    { label: 'Hub Console', path: '/hub', isActive: pathname.startsWith('/hub') },
+    { label: 'Buyer Portal', path: '/buyer', isActive: pathname.startsWith('/buyer') },
+    { label: 'QR Traceability', path: '/t/FGH-ANNUR-2026-LOT214', isActive: pathname.startsWith('/t') },
+    { label: 'Channels / IVR', path: '/channels', isActive: pathname.startsWith('/channels') },
+    { label: 'Impact Dashboard', path: '/impact', isActive: pathname.startsWith('/impact') },
+    { label: 'Sources', path: '/sources', isActive: pathname.startsWith('/sources') },
+    { label: 'Tokens', path: '/styleguide', isActive: pathname.startsWith('/styleguide'), isMono: true },
+  ];
+
+  return (
+    <header className="sticky top-0 z-50 h-14 bg-white/95 backdrop-blur-md border-b border-border shadow-xs px-4 sm:px-6">
+      <div className="max-w-[1500px] h-full mx-auto flex items-center justify-between gap-4">
+        {/* Brand & Suite Logo */}
+        <Link to="/farmer" className="flex items-center gap-2.5 group shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center font-serif font-black text-base shadow-xs group-hover:bg-[#1a5b31] transition-colors">
+            F
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="font-serif font-bold text-base text-ink tracking-tight group-hover:text-accent transition-colors">
+                FarmGate Hub
+              </span>
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-muted hidden sm:block">
+              Peri-Urban Micro-Hub Suite
+            </span>
+          </div>
+        </Link>
+
+        {/* Primary Navigation Links with Clear Active Highlighting */}
+        <nav
+          aria-label="Suite module navigation"
+          className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none py-1"
+        >
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-current={item.isActive ? 'page' : undefined}
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-[13px] transition-all flex items-center gap-1.5 shrink-0 ${
+                item.isActive
+                  ? 'bg-accent text-white font-bold shadow-xs border border-accent ring-2 ring-accent/20'
+                  : item.isMono
+                  ? 'font-mono text-[11px] text-ink-muted hover:text-ink hover:bg-surface border border-transparent hover:border-border'
+                  : 'font-medium text-ink-muted hover:text-ink hover:bg-surface border border-transparent hover:border-border'
+              }`}
+            >
+              {item.isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shrink-0" />
+              )}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </header>
+  );
+};
+
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,66 +95,7 @@ export const App: React.FC = () => {
           <BrowserRouter>
             <div className="min-h-screen flex flex-col bg-page text-ink">
               {/* Monorepo Top Navigation Bar */}
-              <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border px-4 py-2 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-accent" />
-                  <Link to="/farmer" className="font-serif font-bold text-sm tracking-tight text-ink hover:text-accent">
-                    FarmGate Hub
-                  </Link>
-                  <span className="text-ink-muted hidden lg:inline">| Demo Suite</span>
-                </div>
-
-                <nav className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none">
-                  <Link
-                    to="/farmer"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Farmer App
-                  </Link>
-                  <Link
-                    to="/hub"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Hub Console
-                  </Link>
-                  <Link
-                    to="/buyer"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Buyer Portal
-                  </Link>
-                  <Link
-                    to="/t/FGH-ANNUR-2026-LOT214"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    QR Traceability
-                  </Link>
-                  <Link
-                    to="/channels"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Channels / IVR
-                  </Link>
-                  <Link
-                    to="/impact"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Impact Dashboard
-                  </Link>
-                  <Link
-                    to="/sources"
-                    className="px-2.5 py-1 rounded font-medium text-ink hover:bg-surface border border-transparent hover:border-border"
-                  >
-                    Sources
-                  </Link>
-                  <Link
-                    to="/styleguide"
-                    className="px-2 py-1 rounded text-ink-muted hover:text-ink font-mono text-[11px]"
-                  >
-                    Tokens
-                  </Link>
-                </nav>
-              </header>
+              <TopNav />
 
               {/* Main Content Area */}
               <main className="flex-1">

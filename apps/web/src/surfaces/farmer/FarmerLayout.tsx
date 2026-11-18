@@ -46,7 +46,7 @@ export const FarmerLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col items-center">
       {/* Time Warp & Simulation Control Bar (Always visible for demo) */}
-      <div className="w-full bg-surface-elevated border-b border-border py-2 px-4 shadow-sm sticky top-0 z-40">
+      <div className="w-full bg-surface-elevated border-b border-border py-2 px-4 shadow-sm sticky top-14 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <Radio
