@@ -204,3 +204,29 @@ export function useSendWhatsAppMessage() {
     },
   });
 }
+
+export function useClearWhatsAppMessages() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (farmerId: string) =>
+      fetchJson<{ success: boolean }>(`/api/channels/whatsapp/messages?farmerId=${encodeURIComponent(farmerId)}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: (_, farmerId) => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp', farmerId] });
+    },
+  });
+}
+
+export function useDeleteWhatsAppMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId, farmerId }: { messageId: string; farmerId: string }) =>
+      fetchJson<{ success: boolean }>(`/api/channels/whatsapp/messages/${encodeURIComponent(messageId)}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp', vars.farmerId] });
+    },
+  });
+}

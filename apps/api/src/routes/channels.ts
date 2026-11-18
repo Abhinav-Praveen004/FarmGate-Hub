@@ -511,3 +511,40 @@ channelsRouter.get('/threads', async (c) => {
     simulated: true,
   });
 });
+
+// Delete all messages for a farmer (New Chat / Clear Chat)
+channelsRouter.delete('/whatsapp/messages', async (c) => {
+  const rawFarmerId = c.req.query('farmerId') || 'FARMER-001';
+  const normalizedId = normalizeFarmerId(rawFarmerId);
+
+  db.delete(schema.channelMessages)
+    .where(
+      or(
+        eq(schema.channelMessages.farmerId, rawFarmerId),
+        eq(schema.channelMessages.farmerId, normalizedId)
+      )
+    )
+    .run();
+
+  return c.json({ success: true, message: 'Chat cleared' });
+});
+
+// Delete an individual message by ID
+channelsRouter.delete('/whatsapp/messages/:id', async (c) => {
+  const msgId = c.req.param('id');
+  db.delete(schema.channelMessages)
+    .where(eq(schema.channelMessages.id, msgId))
+    .run();
+
+  return c.json({ success: true, message: 'Message deleted' });
+});
+
+// Aliases
+channelsRouter.delete('/threads', async (c) => {
+  const rawFarmerId = c.req.query('farmerId') || 'FARMER-001';
+  const normalizedId = normalizeFarmerId(rawFarmerId);
+  db.delete(schema.channelMessages)
+    .where(or(eq(schema.channelMessages.farmerId, rawFarmerId), eq(schema.channelMessages.farmerId, normalizedId)))
+    .run();
+  return c.json({ success: true });
+});

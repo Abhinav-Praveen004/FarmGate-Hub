@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useDemo } from '../../context/DemoContext';
-import { useWhatsAppMessages, useSendWhatsAppMessage } from '../../api/client';
+import { useWhatsAppMessages, useSendWhatsAppMessage, useClearWhatsAppMessages, useDeleteWhatsAppMessage } from '../../api/client';
 import { Badge } from '@farmgate/ui';
 import {
   MessageSquare,
@@ -10,6 +10,8 @@ import {
   CheckCheck,
   ShieldCheck,
   Sparkles,
+  RotateCcw,
+  Trash2,
 } from 'lucide-react';
 
 interface WhatsAppDrawerProps {
@@ -25,6 +27,8 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
 
   const { data: messages } = useWhatsAppMessages(activePersona.id);
   const sendMessage = useSendWhatsAppMessage();
+  const clearChat = useClearWhatsAppMessages();
+  const deleteMessage = useDeleteWhatsAppMessage();
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -43,6 +47,14 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
       lang,
     });
     setInputText('');
+  };
+
+  const handleClearChat = () => {
+    clearChat.mutate(activePersona.id);
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    deleteMessage.mutate({ messageId, farmerId: activePersona.id });
   };
 
   const quickReplies = [
@@ -77,12 +89,25 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleClearChat}
+              disabled={clearChat.isPending}
+              title="Start New Chat (Clear History)"
+              aria-label="Start New Chat"
+              className="px-2.5 py-1 text-xs font-semibold bg-white/15 hover:bg-white/25 active:scale-95 text-white rounded-lg flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>New Chat</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10"
+              aria-label="Close drawer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* WhatsApp Chat Area */}
@@ -125,8 +150,19 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
             return (
               <div
                 key={msg.id}
-                className={`flex ${isFarmer ? 'justify-end' : 'justify-start'}`}
+                className={`group flex items-end gap-1.5 ${isFarmer ? 'justify-end' : 'justify-start'}`}
               >
+                {isFarmer && (
+                  <button
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    disabled={deleteMessage.isPending}
+                    title="Delete message"
+                    aria-label="Delete message"
+                    className="opacity-0 group-hover:opacity-100 text-[#667781] hover:text-red-600 transition-opacity p-1 mb-1 rounded hover:bg-black/5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <div
                   className={`rounded-lg p-3 shadow-sm max-w-[85%] text-xs space-y-1 ${
                     isFarmer
@@ -140,6 +176,17 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
                     {isFarmer && <CheckCheck className="w-3.5 h-3.5 text-blue-500" />}
                   </div>
                 </div>
+                {!isFarmer && (
+                  <button
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    disabled={deleteMessage.isPending}
+                    title="Delete message"
+                    aria-label="Delete message"
+                    className="opacity-0 group-hover:opacity-100 text-[#667781] hover:text-red-600 transition-opacity p-1 mb-1 rounded hover:bg-black/5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             );
           })}

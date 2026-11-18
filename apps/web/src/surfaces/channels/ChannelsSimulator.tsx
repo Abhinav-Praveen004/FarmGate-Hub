@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Badge, Button } from '@farmgate/ui';
 import { useLanguage } from '../../context/LanguageContext';
 import { useDemo } from '../../context/DemoContext';
-import { useWhatsAppMessages, useSendWhatsAppMessage } from '../../api/client';
+import { useWhatsAppMessages, useSendWhatsAppMessage, useClearWhatsAppMessages, useDeleteWhatsAppMessage } from '../../api/client';
 import {
   MessageSquare,
   Phone,
@@ -13,6 +13,7 @@ import {
   Radio,
   RotateCcw,
   Headphones,
+  Trash2,
 } from 'lucide-react';
 
 export const ChannelsSimulator: React.FC = () => {
@@ -25,11 +26,21 @@ export const ChannelsSimulator: React.FC = () => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const { data: whatsappMessages } = useWhatsAppMessages(activePersona.id);
   const sendWhatsApp = useSendWhatsAppMessage();
+  const clearChat = useClearWhatsAppMessages();
+  const deleteMessage = useDeleteWhatsAppMessage();
 
   // Scroll to bottom on new messages
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [whatsappMessages]);
+
+  const handleClearChat = () => {
+    clearChat.mutate(activePersona.id);
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    deleteMessage.mutate({ messageId, farmerId: activePersona.id });
+  };
 
   // Voice IVR state
   const [ivrCallActive, setIvrCallActive] = useState(false);
@@ -198,7 +209,19 @@ export const ChannelsSimulator: React.FC = () => {
                     <span className="text-[10px] text-emerald-100 block">Verified Official Business Bot</span>
                   </div>
                 </div>
-                <Badge variant="simulated">SIM</Badge>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleClearChat}
+                    disabled={clearChat.isPending}
+                    title="Start New Chat (Clear History)"
+                    aria-label="Start New Chat"
+                    className="px-2.5 py-1 text-xs font-semibold bg-white/15 hover:bg-white/25 active:scale-95 text-white rounded-lg flex items-center gap-1 transition-all shadow-xs disabled:opacity-50"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>New Chat</span>
+                  </button>
+                  <Badge variant="simulated">SIM</Badge>
+                </div>
               </div>
 
               {/* Chat Messages */}
@@ -223,8 +246,19 @@ export const ChannelsSimulator: React.FC = () => {
                 {whatsappMessages?.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex ${msg.sender === 'FARMER' ? 'justify-end' : 'justify-start'}`}
+                    className={`group flex items-end gap-1.5 ${msg.sender === 'FARMER' ? 'justify-end' : 'justify-start'}`}
                   >
+                    {msg.sender === 'FARMER' && (
+                      <button
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        disabled={deleteMessage.isPending}
+                        title="Delete message"
+                        aria-label="Delete message"
+                        className="opacity-0 group-hover:opacity-100 text-[#667781] hover:text-red-600 transition-opacity p-1 mb-1 rounded hover:bg-black/5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <div
                       className={`p-3 rounded-lg shadow-sm max-w-[85%] text-xs whitespace-pre-line leading-relaxed ${
                         msg.sender === 'FARMER'
@@ -237,6 +271,17 @@ export const ChannelsSimulator: React.FC = () => {
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ✓✓
                       </span>
                     </div>
+                    {msg.sender === 'BOT' && (
+                      <button
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        disabled={deleteMessage.isPending}
+                        title="Delete message"
+                        aria-label="Delete message"
+                        className="opacity-0 group-hover:opacity-100 text-[#667781] hover:text-red-600 transition-opacity p-1 mb-1 rounded hover:bg-black/5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
