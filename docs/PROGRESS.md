@@ -23,3 +23,12 @@ Running log of completed tasks across project milestones.
 - [x] M1-T10: Implemented typed multilingual dictionaries (en, hi, ta) in `packages/shared/src/i18n`.
 - [x] M1-T11: Created deterministic seed fixtures (Lot #214, Lot #198, prices, buyers, pod) in `packages/shared/src/fixtures`.
 - [x] M1-T12: Verified 40 unit and golden tests with 100% advisor coverage and 99.4% finance engine coverage.
+- [x] M2-T01: Scaffolded Hono API application with TypeScript and Drizzle ORM.
+- [x] M2-T02: Implemented SQLite database schema in `apps/api/src/db/schema`.
+- [x] M2-T03: Built injectable simulation `Clock` with time-warp capability in `apps/api/src/clock`.
+- [x] M2-T04: Created hardware & service adapters in `apps/api/src/adapters` (Payment, Channel, Scale, Sensors).
+- [x] M2-T05: Created deterministic database seed in `apps/api/src/db/seed` (12 farmers, buyers, orders, lots).
+- [x] M2-T06: Built REST endpoints across auth, prices, lots, advances, hub, buyer, receipts, impact, channels, demo, and traceability.
+- [x] M2-T07: Implemented Server-Sent Events (`/api/events`) with real-time time-warp broadcasting.
+- [x] M2-T08: Verified double-entry ledger balance and full end-to-end lot lifecycle.
+- [x] M2-T09: Verified exact Screen 1, 2, and 3 values and Section 4.7 network model matches via API tests.

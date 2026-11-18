@@ -1,0 +1,29 @@
+{
+  "name": "@farmgate/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "start": "tsx src/index.ts",
+    "seed": "tsx src/db/seed.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@farmgate/shared": "*",
+    "@hono/node-server": "^2.1.9",
+    "better-sqlite3": "^13.2.0",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.19",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.10",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.7"
+  }
+}
