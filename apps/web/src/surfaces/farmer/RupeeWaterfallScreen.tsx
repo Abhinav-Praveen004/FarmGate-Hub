@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Info,
+  Layers,
 } from 'lucide-react';
 import { formatRupees, formatWeightKg } from '@farmgate/shared';
 
@@ -25,7 +26,8 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
 }) => {
   const { lang, t, speak, isSpeaking } = useLanguage();
   const { activePersona } = useDemo();
-  const { data: receipt, isLoading } = useReceiptByLot(lotId);
+  const [selectedLot, setSelectedLot] = useState<string>(lotId);
+  const { data: receipt, isLoading } = useReceiptByLot(selectedLot);
   const [isExporting, setIsExporting] = useState(false);
 
   // Audio readout in chosen language
@@ -48,8 +50,88 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
     }, 300);
   };
 
+  // Dynamic lot configuration
+  const isLot198 = selectedLot === 'LOT-198';
+  const isLot210 = selectedLot === 'LOT-210';
+  const isLot214 = selectedLot === 'LOT-214';
+
+  const lotMeta = isLot198
+    ? {
+        title: 'Lot #198: 100 kg Hybrid Tomato (Grade A)',
+        code: 'RECEIPT #RCP-198-SETTLED',
+        status: 'PAID IN 24H',
+        statusVariant: 'success' as const,
+        consumerPrice: 30.0,
+        farmerGross: 13.5,
+        sharePct: 45,
+        hubFee: 1.9,
+        farmerNet: 11.6,
+        transport: 3.0,
+        handling: 3.5,
+        margin: 10.0,
+        grossSale: 1350.0,
+        fees: 190.5,
+        advance: 0,
+        netPaid: 1159.5,
+        txFarmer: 'TX-198-FARMER-CR',
+        txFarmerVal: '+₹1,350.00',
+        txHub: 'TX-198-HUB-FEE',
+        txHubVal: '-₹190.50',
+        txUpi: 'TX-198-UPI-SETTLED',
+        txUpiVal: '₹1,159.50 (UTR: UPI/432198004123)',
+      }
+    : isLot210
+    ? {
+        title: 'Lot #210: 150 kg Desi Tomato (Grade A)',
+        code: 'RECEIPT #RCP-210-SETTLED',
+        status: 'PAID IN 24H',
+        statusVariant: 'success' as const,
+        consumerPrice: 28.0,
+        farmerGross: 12.6,
+        sharePct: 45,
+        hubFee: 1.88,
+        farmerNet: 10.72,
+        transport: 2.8,
+        handling: 3.2,
+        margin: 9.4,
+        grossSale: 1890.0,
+        fees: 282.0,
+        advance: 0,
+        netPaid: 1608.0,
+        txFarmer: 'TX-210-FARMER-CR',
+        txFarmerVal: '+₹1,890.00',
+        txHub: 'TX-210-HUB-FEE',
+        txHubVal: '-₹282.00',
+        txUpi: 'TX-210-UPI-SETTLED',
+        txUpiVal: '₹1,608.00 (UTR: UPI/432210008892)',
+      }
+    : {
+        title: 'Lot #214: 120 kg Hybrid Tomato (Grade A)',
+        code: 'RECEIPT #RCP-214-PENDING',
+        status: 'ESCROW LOCKED',
+        statusVariant: 'warning' as const,
+        consumerPrice: 32.0,
+        farmerGross: 14.4,
+        sharePct: 45,
+        hubFee: 1.93,
+        farmerNet: 12.47,
+        transport: 3.2,
+        handling: 3.5,
+        margin: 10.9,
+        grossSale: 1728.0,
+        fees: 231.6,
+        advance: 720.0,
+        netPaid: 776.4,
+        txFarmer: 'TX-214-FARMER-CR',
+        txFarmerVal: '+₹1,728.00',
+        txHub: 'TX-214-HUB-FEE',
+        txHubVal: '-₹231.60',
+        txUpi: 'TX-214-ESCROW-HOLD',
+        txUpiVal: '₹776.40 (Due upon delivery)',
+      };
+
   return (
-    <div className="space-y-4 pb-8">
+    <div className="space-y-4 pb-32">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -57,6 +139,7 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
             <button
               onClick={onBack}
               className="p-1 rounded-md text-ink-muted hover:text-ink hover:bg-surface"
+              aria-label="Go back"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -72,43 +155,91 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handlePrint}
-          className="flex items-center gap-1.5"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleListen}
+            className="flex items-center gap-1.5"
+            aria-label="Listen to receipt breakdown"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-accent" />
+            <span className="text-xs">{lang === 'hi' ? 'सुनें' : lang === 'ta' ? 'கேளுங்கள்' : 'Listen'}</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrint}
+            className="flex items-center gap-1.5"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span className="text-xs">{lang === 'hi' ? 'प्रिंट' : lang === 'ta' ? 'அச்சிடு' : 'Print'}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Lot Switcher Selector */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          onClick={() => setSelectedLot('LOT-198')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+            selectedLot === 'LOT-198'
+              ? 'bg-accent text-white shadow-xs'
+              : 'bg-surface border border-border text-ink-muted hover:text-ink'
+          }`}
         >
-          <Printer className="w-3.5 h-3.5" />
-          <span className="text-xs">{lang === 'hi' ? 'प्रिंट' : lang === 'ta' ? 'அச்சிடு' : 'Print'}</span>
-        </Button>
+          Lot #198 (Settled)
+        </button>
+        <button
+          onClick={() => setSelectedLot('LOT-210')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+            selectedLot === 'LOT-210'
+              ? 'bg-accent text-white shadow-xs'
+              : 'bg-surface border border-border text-ink-muted hover:text-ink'
+          }`}
+        >
+          Lot #210 (Settled)
+        </button>
+        <button
+          onClick={() => setSelectedLot('LOT-214')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+            selectedLot === 'LOT-214'
+              ? 'bg-accent text-white shadow-xs'
+              : 'bg-surface border border-border text-ink-muted hover:text-ink'
+          }`}
+        >
+          Lot #214 (In Pod)
+        </button>
       </div>
 
       {/* Lot Metadata Banner */}
       <div className="bg-surface-elevated border border-border rounded-lg p-3.5 shadow-sm flex items-center justify-between">
         <div>
-          <span className="text-xs font-mono font-bold text-accent">RECEIPT #RCP-198-SETTLED</span>
-          <p className="text-sm font-bold text-ink">Lot #198: 100 kg Hybrid Tomato (Grade A)</p>
+          <span className="text-xs font-mono font-bold text-accent">{lotMeta.code}</span>
+          <p className="text-sm font-bold text-ink">{lotMeta.title}</p>
           <p className="text-xs text-ink-muted">Farmer: {activePersona.name} • UPI: {activePersona.vpa || 'ramesh@okhdfcbank'}</p>
         </div>
-        <Badge variant="success" size="md">
-          PAID IN 24H
+        <Badge variant={lotMeta.statusVariant} size="md">
+          {lotMeta.status}
         </Badge>
       </div>
 
-      {/* Rupee Waterfall Signature Component */}
+      {/* Rupee Waterfall Signature Component (showHeader=false eliminates duplicate header) */}
       <RupeeWaterfall
-        consumerReferencePriceRupees={30.0}
-        farmerGrossPriceRupees={13.5}
-        farmerSharePercent={45}
-        hubFeeRupees={1.9}
-        netPaidToFarmerRupees={11.6}
-        transportCostRupees={3.0}
-        handlingLossRupees={3.5}
-        intermediaryMarginRupees={10.0}
-        grossSaleTotalRupees={1350.0}
-        feesDeductedTotalRupees={190.5}
-        advanceDeductedTotalRupees={0}
-        netPaidTotalRupees={1159.5}
+        showHeader={false}
+        consumerReferencePriceRupees={lotMeta.consumerPrice}
+        farmerGrossPriceRupees={lotMeta.farmerGross}
+        farmerSharePercent={lotMeta.sharePct}
+        hubFeeRupees={lotMeta.hubFee}
+        netPaidToFarmerRupees={lotMeta.farmerNet}
+        transportCostRupees={lotMeta.transport}
+        handlingLossRupees={lotMeta.handling}
+        intermediaryMarginRupees={lotMeta.margin}
+        grossSaleTotalRupees={lotMeta.grossSale}
+        feesDeductedTotalRupees={lotMeta.fees}
+        advanceDeductedTotalRupees={lotMeta.advance}
+        netPaidTotalRupees={lotMeta.netPaid}
         onListen={handleListen}
         language={lang}
       />
@@ -129,16 +260,16 @@ export const RupeeWaterfallScreen: React.FC<RupeeWaterfallScreenProps> = ({
 
         <div className="space-y-1.5 font-mono text-xs text-ink-muted bg-surface-elevated p-3 rounded border border-border">
           <div className="flex justify-between">
-            <span>TX-198-FARMER-CR</span>
-            <span className="text-ink font-semibold">+₹1,350.00 (Farmer Account)</span>
+            <span>{lotMeta.txFarmer}</span>
+            <span className="text-ink font-semibold">{lotMeta.txFarmerVal} (Farmer Account)</span>
           </div>
           <div className="flex justify-between">
-            <span>TX-198-HUB-FEE</span>
-            <span className="text-ink font-semibold">-₹190.50 (Hub Operations)</span>
+            <span>{lotMeta.txHub}</span>
+            <span className="text-ink font-semibold">{lotMeta.txHubVal} (Hub Operations)</span>
           </div>
           <div className="flex justify-between border-t border-border pt-1.5 font-bold text-ink">
-            <span>TX-198-UPI-SETTLED</span>
-            <span className="text-accent">₹1,159.50 (UTR: UPI/432198004123)</span>
+            <span>{lotMeta.txUpi}</span>
+            <span className="text-accent">{lotMeta.txUpiVal}</span>
           </div>
         </div>
 

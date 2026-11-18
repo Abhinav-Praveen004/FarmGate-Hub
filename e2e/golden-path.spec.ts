@@ -176,7 +176,7 @@ test.describe('FarmGate Hub - 8-Step End-to-End Golden Path', () => {
 
     // Check Net Paid to Farmer
     await expect(page.locator('text=Net Paid to Farmer').first()).toBeVisible();
-    await expect(page.locator('text=₹11.60')).toBeVisible();
+    await expect(page.locator('text=₹11.60').first()).toBeVisible();
 
     // Check Double-Entry Ledger Proof
     await expect(page.locator('text=Delta: ₹0.00 Balanced')).toBeVisible();
