@@ -71,3 +71,15 @@ Running log of completed tasks across project milestones.
 - [x] M7-T04: Implemented Grade-C Waste-to-Value routing in Hub console directing soft/blemished tomatoes to solar dehydration and paste processing at ₹4.50/kg.
 - [x] M7-T05: Implemented Evidence Base & Sources Page (`SourcesPage`) mapping model parameters to Section 4 citations and Group 4 author attribution.
 - [x] M7-T06: Captured and verified screenshots for all P1 surfaces (`docs/shots/buyer-1440.png`, `traceability-390.png`, `channels-1440.png`, `sources-1440.png`).
+
+
+---
+
+## Milestone 8: Hardening, E2E & Delivery (Gate G3) [COMPLETED: `c2aa2aa`]
+- [x] M8-T01: Implemented 8-step Playwright E2E golden path test (`e2e/golden-path.spec.ts`) covering full smallholder journey from advice to payout.
+- [x] M8-T02: Executed Axe WCAG 2.2 AA accessibility audit on all 7 surfaces (`e2e/a11y.spec.ts`) with zero critical and zero serious violations.
+- [x] M8-T03: Verified client bundle size budget: **169.74 kB gzipped** (well below the <180 kB budget).
+- [x] M8-T04: Author documentation suite: `README.md`, `docs/ARCHITECTURE.md`, `docs/DEMO_SCRIPT.md`, `docs/SIMULATIONS.md`, and `docs/pitch/PITCH_DECK.md`.
+- [x] M8-T05: Implemented unified single-process runner `server.js` orchestration for ports 4000, 5173, 8080, and 8787.
+- [x] M8-T06: Ran comprehensive repository verification (`npm run verify`): 49 Vitest tests, 8 Playwright E2E steps, and 7 Axe audits passed with zero errors.
+- [ ] Gate G3: Final Delivery Review Stop.
