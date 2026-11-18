@@ -46,3 +46,14 @@ Running log of completed tasks across project milestones.
 - [x] M4-T06: Implemented Screen 4 (`MoneyScreen`) with 24-hour SLA payout countdown clock and 50%–70% instant advance request flow with simulated UPI disbursement.
 - [x] M4-T07: Implemented Screen 5 (`WhatsAppDrawer`) simulating FarmGate Hub WhatsApp bot with quick replies (PRICE, LOTS, RECEIPT) and localized responses.
 - [x] M4-T08: Implemented `FarmerLayout` mobile shell with bottom navigation, top status bar, and verified mobile viewport rendering.
+- [x] M5-T01: Implemented `IntakeWizard` with live scale capture readout, 30-sec grading checklist, operator override with mandatory audit note, and printable thermal QR sticker preview.
+- [x] M5-T02: Implemented `CoolPodBoard` with 10,000 kg `PodGauge`, lot timers table, and live simulation toggles for power outage and door open.
+- [x] M5-T03: Implemented `CollectiveLoads` builder with verified buyer demand cards, optimal lot aggregator (scoring 78%), dispatch manifest generation, and 24h SLA payout activation.
+- [x] M5-T04: Implemented `PayoutsQueue` with farmer advance approvals and 24h SLA countdown settlement queue with simulated UPI disbursement.
+- [x] M5-T05: Implemented `HubLayout` operator console shell for tablet/desktop with active time warp and simulation indicators.
+- [x] M5-T06: Implemented `KpiScorecards` featuring 5 core metrics with targets, demo actuals, and Demo data badges.
+- [x] M5-T07: Implemented `EconomicsCalculator` with side-by-side per-tonne tomato waterfall (₹8,751.6 vs ₹11,131.2, +27.2%) and interactive annual household simulator.
+- [x] M5-T08: Implemented `CohortModelView` integrating `FinanceTable` with "Matches the Report" badge and Year 1–4 revenue/EBITDA growth charts.
+- [x] M5-T09: Implemented `FundingMarketView` with TAM (₹38,600 Cr), SAM (₹610 Cr), SOM (₹6.98 Cr), and ₹5.0 Cr Seed Round Use of Funds breakdown.
+- [x] M5-T10: Implemented `SensitivitySliders` for volume, price, and adoption with real-time recalculation of EBITDA and payback.
+- [x] M5-T11: Implemented `ImpactLayout` dashboard shell and verified with headless browser screenshots at 1024px and 1440px viewports (`docs/shots/`).

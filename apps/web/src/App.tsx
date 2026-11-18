@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from './context/LanguageContext.js';
 import { DemoProvider } from './context/DemoContext.js';
 import { FarmerLayout } from './surfaces/farmer/FarmerLayout.js';
+import { HubLayout } from './surfaces/hub/HubLayout.js';
+import { ImpactLayout } from './surfaces/impact/ImpactLayout.js';
 import { StyleguidePage } from './pages/Styleguide.js';
 
 const queryClient = new QueryClient({
@@ -64,31 +66,9 @@ export const App: React.FC = () => {
               <main className="flex-1">
                 <Routes>
                   <Route path="/farmer/*" element={<FarmerLayout />} />
+                  <Route path="/hub/*" element={<HubLayout />} />
+                  <Route path="/impact/*" element={<ImpactLayout />} />
                   <Route path="/styleguide" element={<StyleguidePage />} />
-                  <Route
-                    path="/hub/*"
-                    element={
-                      <div className="max-w-xl mx-auto p-8 text-center space-y-4">
-                        <h2 className="text-xl font-serif font-bold">Hub Operator Console</h2>
-                        <p className="text-sm text-ink-muted">Milestone 5 implements intake, scale capture, cool pod telemetry, and payouts.</p>
-                        <Link to="/farmer" className="text-accent underline font-semibold text-sm">
-                          Return to Farmer App
-                        </Link>
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/impact/*"
-                    element={
-                      <div className="max-w-xl mx-auto p-8 text-center space-y-4">
-                        <h2 className="text-xl font-serif font-bold">Impact & Investor Dashboard</h2>
-                        <p className="text-sm text-ink-muted">Milestone 5 implements 5 KPI scorecards, cohort network model, and sensitivity engine.</p>
-                        <Link to="/farmer" className="text-accent underline font-semibold text-sm">
-                          Return to Farmer App
-                        </Link>
-                      </div>
-                    }
-                  />
                   <Route path="/" element={<Navigate to="/farmer" replace />} />
                 </Routes>
               </main>
