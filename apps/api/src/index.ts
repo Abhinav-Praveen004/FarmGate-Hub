@@ -160,6 +160,7 @@ app.route('/api/receipts', receiptsRouter);
 app.route('/api/impact', impactRouter);
 app.route('/api/channels', channelsRouter);
 app.route('/api/events', eventsRouter);
+app.route('/api/traceability', traceabilityRouter);
 app.route('/t', traceabilityRouter);
 
 // Start server if run directly
