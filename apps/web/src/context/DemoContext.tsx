@@ -49,6 +49,8 @@ interface DemoContextType {
   activePersona: Persona;
   setPersona: (persona: Persona) => void;
   clockTime: Date;
+  timeMode: 'actual' | 'simulated';
+  setTimeMode: (mode: 'actual' | 'simulated') => void;
   advanceClock: (hours: number) => Promise<void>;
   resetDemo: () => Promise<void>;
   isSSEConnected: boolean;
@@ -61,8 +63,37 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const queryClient = useQueryClient();
   const [activePersona, setActivePersona] = useState<Persona>(PERSONAS[0]);
   const [clockTime, setClockTime] = useState<Date>(new Date('2026-11-18T10:00:00.000Z'));
+  const [timeMode, setTimeModeState] = useState<'actual' | 'simulated'>('simulated');
   const [isSSEConnected, setIsSSEConnected] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
+
+  // Live dynamic clock ticking: every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (timeMode === 'actual') {
+        setClockTime(new Date());
+      } else {
+        setClockTime((prev) => new Date(prev.getTime() + 1000));
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeMode]);
+
+  // Set time mode & notify backend
+  const setTimeMode = useCallback(async (mode: 'actual' | 'simulated') => {
+    setTimeModeState(mode);
+    if (mode === 'actual') {
+      setClockTime(new Date());
+    }
+    try {
+      await fetch('/api/demo/clock/mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+      await queryClient.invalidateQueries();
+    } catch {}
+  }, [queryClient]);
 
   // Fetch initial clock time
   useEffect(() => {
@@ -72,10 +103,11 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.clock?.currentTime) {
           setClockTime(new Date(data.clock.currentTime));
         }
+        if (data.clock?.mode) {
+          setTimeModeState(data.clock.mode);
+        }
       })
-      .catch(() => {
-        // Fallback local clock if API is not yet running
-      });
+      .catch(() => {});
   }, []);
 
   // Listen to Server-Sent Events
@@ -173,6 +205,8 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activePersona,
         setPersona: setActivePersona,
         clockTime,
+        timeMode,
+        setTimeMode,
         advanceClock,
         resetDemo,
         isSSEConnected,

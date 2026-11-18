@@ -11,6 +11,7 @@ import { TraceabilityPage } from './surfaces/traceability/TraceabilityPage.js';
 import { ChannelsSimulator } from './surfaces/channels/ChannelsSimulator.js';
 import { SourcesPage } from './surfaces/sources/SourcesPage.js';
 import { StyleguidePage } from './pages/Styleguide.js';
+import { UniversalTimeBar } from './components/UniversalTimeBar.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +97,9 @@ export const App: React.FC = () => {
             <div className="min-h-screen flex flex-col bg-page text-ink">
               {/* Monorepo Top Navigation Bar */}
               <TopNav />
+
+              {/* Universal Dynamic Time & Simulation Control Bar */}
+              <UniversalTimeBar />
 
               {/* Main Content Area */}
               <main className="flex-1">

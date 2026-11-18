@@ -8,22 +8,38 @@ export type ClockListener = (currentIsoTime: string, offsetHours: number) => voi
 export class Clock {
   private baseEpochMs: number;
   private offsetMs: number;
+  private startedAtMs: number;
+  private mode: 'simulated' | 'actual' = 'simulated';
   private listeners: Set<ClockListener> = new Set();
 
-  constructor(initialIsoString: string = '2026-11-18T06:00:00.000Z', initialOffsetHours: number = 0) {
+  constructor(initialIsoString: string = '2026-11-18T10:00:00.000Z', initialOffsetHours: number = 0) {
     this.baseEpochMs = new Date(initialIsoString).getTime();
     this.offsetMs = initialOffsetHours * 3600 * 1000;
+    this.startedAtMs = Date.now();
+  }
+
+  public setMode(mode: 'simulated' | 'actual') {
+    this.mode = mode;
+    this.notify(this.toISOString(), this.getOffsetHours());
+  }
+
+  public getMode(): 'simulated' | 'actual' {
+    return this.mode;
   }
 
   /**
-   * Returns current simulated Date.
+   * Returns current active Date (dynamic ticking).
    */
   public now(): Date {
-    return new Date(this.baseEpochMs + this.offsetMs);
+    if (this.mode === 'actual') {
+      return new Date();
+    }
+    const elapsedMs = Date.now() - this.startedAtMs;
+    return new Date(this.baseEpochMs + this.offsetMs + elapsedMs);
   }
 
   /**
-   * Returns current simulated ISO timestamp string.
+   * Returns current active ISO timestamp string.
    */
   public toISOString(): string {
     return this.now().toISOString();
@@ -54,7 +70,11 @@ export class Clock {
   }
 
   public reset(initialOffsetHours: number = 0): string {
-    return this.setOffsetHours(initialOffsetHours);
+    this.startedAtMs = Date.now();
+    this.offsetMs = initialOffsetHours * 3600 * 1000;
+    const current = this.toISOString();
+    this.notify(current, initialOffsetHours);
+    return current;
   }
 
   public subscribe(listener: ClockListener): () => void {

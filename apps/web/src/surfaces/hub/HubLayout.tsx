@@ -10,22 +10,16 @@ import {
   Thermometer,
   Truck,
   CreditCard,
-  Clock,
-  RotateCcw,
-  FastForward,
-  Radio,
   Recycle,
 } from 'lucide-react';
-import { useDemo } from '../../context/DemoContext.js';
 
 export const HubLayout: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'intake' | 'pod' | 'loads' | 'payouts' | 'grade_c'>('intake');
-  const { clockTime, advanceClock, resetDemo, isSSEConnected, isWarping } = useDemo();
 
   return (
     <div className="min-h-screen bg-bg text-ink pb-16">
       {/* Sub-header Toolbar */}
-      <div className="bg-surface-elevated border-b border-border py-2.5 px-4 sm:px-6 shadow-sm sticky top-14 z-30">
+      <div className="bg-surface-elevated border-b border-border py-2.5 px-4 sm:px-6 shadow-sm">
         <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -36,52 +30,10 @@ export const HubLayout: React.FC = () => {
             <span className="text-ink-muted hidden md:inline">| Ravi Shankar (Hub Lead)</span>
           </div>
 
-          {/* Time Warp Bar */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-ink-muted font-mono text-[11px] mr-2">
-              <Radio className={`w-3.5 h-3.5 ${isSSEConnected ? 'text-accent animate-pulse' : 'text-amber-500'}`} />
-              <span>{clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => advanceClock(1)}
-                disabled={isWarping}
-                className="px-2 py-0.5 rounded bg-surface hover:bg-border text-ink font-mono text-xs border border-border"
-              >
-                +1h
-              </button>
-              <button
-                onClick={() => advanceClock(6)}
-                disabled={isWarping}
-                className="px-2 py-0.5 rounded bg-surface hover:bg-border text-ink font-mono text-xs border border-border"
-              >
-                +6h
-              </button>
-              <button
-                onClick={() => advanceClock(14)}
-                disabled={isWarping}
-                className="px-2 py-0.5 rounded bg-surface hover:bg-border text-ink font-mono text-xs border border-border font-bold text-accent"
-              >
-                +14h
-              </button>
-              <button
-                onClick={() => advanceClock(24)}
-                disabled={isWarping}
-                className="px-2 py-0.5 rounded bg-surface hover:bg-border text-ink font-mono text-xs border border-border"
-              >
-                +24h
-              </button>
-              <button
-                onClick={() => resetDemo()}
-                disabled={isWarping}
-                title="Reset Demo Data"
-                aria-label="Reset Demo Data"
-                className="p-1 rounded bg-surface hover:bg-border text-ink-muted hover:text-ink border border-border"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          <div className="flex items-center gap-3 text-ink-muted font-mono text-[11px]">
+            <span>Pod Capacity: 5,000 kg</span>
+            <span>•</span>
+            <span className="text-accent font-bold">Solar Thermal Pod: 11.5°C</span>
           </div>
         </div>
       </div>

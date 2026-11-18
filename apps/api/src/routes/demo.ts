@@ -8,9 +8,32 @@ import { broadcastEvent } from './events.js';
 
 export const demoRouter = new Hono();
 
-demoRouter.post('/advance', async (c) => {
-  const body = await c.req.json();
-  const hours = Number(body.hours) || 1;
+// 1. Get current demo clock & simulation state
+demoRouter.get('/state', (c) => {
+  return c.json({
+    clock: {
+      currentTime: systemClock.toISOString(),
+      offsetHours: systemClock.getOffsetHours(),
+      mode: systemClock.getMode(),
+    },
+  });
+});
+
+demoRouter.get('/clock', (c) => {
+  return c.json({
+    currentTime: systemClock.toISOString(),
+    offsetHours: systemClock.getOffsetHours(),
+    mode: systemClock.getMode(),
+  });
+});
+
+// 2. Advance time handler (shared for /advance and /clock/advance)
+const handleAdvance = async (c: any) => {
+  let body: any = {};
+  try {
+    body = await c.req.json();
+  } catch {}
+  const hours = Number(body?.hours) || 1;
 
   const newIso = systemClock.advance(hours);
 
@@ -33,7 +56,32 @@ demoRouter.post('/advance', async (c) => {
     success: true,
     advancedHours: hours,
     simulatedTime: newIso,
+    currentTime: newIso,
     offsetHours: systemClock.getOffsetHours(),
+  });
+};
+
+demoRouter.post('/advance', handleAdvance);
+demoRouter.post('/clock/advance', handleAdvance);
+
+// 3. Set clock mode: 'actual' | 'simulated'
+demoRouter.post('/clock/mode', async (c) => {
+  let body: any = {};
+  try {
+    body = await c.req.json();
+  } catch {}
+  const mode = body?.mode === 'actual' ? 'actual' : 'simulated';
+  systemClock.setMode(mode);
+
+  broadcastEvent('clock_mode', {
+    mode,
+    currentTime: systemClock.toISOString(),
+  });
+
+  return c.json({
+    success: true,
+    mode,
+    currentTime: systemClock.toISOString(),
   });
 });
 
