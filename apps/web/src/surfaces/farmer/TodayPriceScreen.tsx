@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { SellHoldCard, Badge } from '@farmgate/ui';
+import { SellHoldCard, Badge, Button } from '@farmgate/ui';
 import { useLanguage } from '../../context/LanguageContext';
 import { useDemo } from '../../context/DemoContext';
 import { useTodayPrice, useFarmerLots, useMakeLotDecision } from '../../api/client';
-import { CheckCircle2, Sparkles, TrendingUp, Info } from 'lucide-react';
+import { CheckCircle2, Sparkles, TrendingUp, Info, ShieldCheck, X } from 'lucide-react';
 
 const CROPS = [
   { id: 'tomato', emoji: '🍅', en: 'Tomato', hi: 'टमाटर', ta: 'தக்காளி' },
@@ -19,11 +19,26 @@ const CROP_VARIANTS: Record<string, { en: string; hi: string; ta: string }> = {
   chilli: { en: 'Guntur Hot Chilli', hi: 'हरी मिर्च (गुंटूर)', ta: 'பச்சை மிளகாய் (குண்டூர்)' },
 };
 
-export const TodayPriceScreen: React.FC = () => {
+interface TodayPriceScreenProps {
+  onNavigateToLots?: () => void;
+}
+
+export const TodayPriceScreen: React.FC<TodayPriceScreenProps> = ({ onNavigateToLots }) => {
   const { lang, t, speak, isSpeaking } = useLanguage();
   const { activePersona } = useDemo();
   const [selectedCrop, setSelectedCrop] = useState<string>('tomato');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  // Pop-up modals state
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [saleSuccessData, setSaleSuccessData] = useState<{
+    lotNumber: number;
+    crop: string;
+    weightKg: number;
+    buyer: string;
+    priceRupees: number;
+    gross: number;
+  } | null>(null);
 
   const { data: priceData, isLoading } = useTodayPrice(selectedCrop);
   const { data: lots } = useFarmerLots(activePersona.id);
@@ -34,42 +49,63 @@ export const TodayPriceScreen: React.FC = () => {
     (l) => l.crop.toLowerCase() === selectedCrop.toLowerCase() && l.status.toUpperCase() === 'IN_POD'
   );
 
+  // Find lot that was already sold/dispatched for this crop
+  const soldLot = lots?.find(
+    (l) =>
+      l.crop.toLowerCase() === selectedCrop.toLowerCase() &&
+      (l.status.toUpperCase() === 'SOLD' ||
+        l.status.toUpperCase() === 'DISPATCHED' ||
+        l.status.toUpperCase() === 'SETTLED' ||
+        l.status.toUpperCase() === 'PAID')
+  );
+
   const currentCropVariant =
     CROP_VARIANTS[selectedCrop]?.[lang] || CROP_VARIANTS[selectedCrop]?.en || 'Produce';
   const currentCropSimple =
     CROPS.find((c) => c.id === selectedCrop)?.[lang] || selectedCrop;
 
-  const handleSell = () => {
-    if (podLot) {
-      makeDecision.mutate(
-        {
-          lotId: podLot.id,
-          decision: 'SELL',
-          priceRupees: priceData?.buyerBidRupees || 14.0,
+  // Open modal on Sell Click
+  const handleSellClick = () => {
+    setSaleSuccessData(null);
+    setShowSellModal(true);
+  };
+
+  // Execute sale decision
+  const handleConfirmSale = () => {
+    if (!podLot) return;
+
+    const salePrice = priceData?.buyerBidRupees || 14.0;
+    const weightKg = podLot.weightGrams / 1000;
+    const grossVal = weightKg * salePrice;
+
+    makeDecision.mutate(
+      {
+        lotId: podLot.id,
+        decision: 'SELL',
+        priceRupees: salePrice,
+      },
+      {
+        onSuccess: () => {
+          setSaleSuccessData({
+            lotNumber: podLot.lotNumber,
+            crop: currentCropSimple,
+            weightKg,
+            buyer: 'Annapurna Kirana Network',
+            priceRupees: salePrice,
+            gross: grossVal,
+          });
+
+          setFeedbackMessage(
+            lang === 'hi'
+              ? `लॉट #${podLot.lotNumber} (${currentCropSimple}) को ₹${salePrice}/किग्रा पर बेचने की पुष्टि हुई! डाटा कलेक्टिव लोड में भेज दिया गया है।`
+              : lang === 'ta'
+              ? `லாட் #${podLot.lotNumber} (${currentCropSimple}) ₹${salePrice}/கிலோ விற்பனைக்கு உறுதி செய்யப்பட்டது! கூட்டு சுமைக்கு அனுப்பப்பட்டது.`
+              : `Confirmed sale for Lot #${podLot.lotNumber} (${currentCropSimple}) at ₹${salePrice}/kg! Queued for collective dispatch & payout.`
+          );
+          setTimeout(() => setFeedbackMessage(null), 8000);
         },
-        {
-          onSuccess: () => {
-            setFeedbackMessage(
-              lang === 'hi'
-                ? `लॉट #${podLot.lotNumber} (${currentCropSimple}) को ₹${priceData?.buyerBidRupees || 14}/किग्रा के भाव पर बेचने की पुष्टि हुई! डाटा कलेक्टिव लोड में भेज दिया गया है।`
-                : lang === 'ta'
-                ? `லாட் #${podLot.lotNumber} (${currentCropSimple}) ₹${priceData?.buyerBidRupees || 14}/கிலோ விற்பனைக்கு உறுதி செய்யப்பட்டது! கூட்டு சுமைக்கு அனுப்பப்பட்டது.`
-                : `Confirmed sale for Lot #${podLot.lotNumber} (${currentCropSimple}) at ₹${priceData?.buyerBidRupees || 14}/kg! Queued for collective dispatch & payout.`
-            );
-            setTimeout(() => setFeedbackMessage(null), 6000);
-          },
-        }
-      );
-    } else {
-      setFeedbackMessage(
-        lang === 'hi'
-          ? `आपके पास कूल पॉड में कोई सक्रिय ${currentCropSimple} लॉट नहीं है। नया लॉट लाने के लिए हब पर जाएं या व्हाट्सएप पर स्लॉट बुक करें।`
-          : lang === 'ta'
-          ? `கூல் பாலில் உங்களிடம் ${currentCropSimple} லாட் இல்லை. புதிய அறுவடையை கொண்டு வர ஹப்பிற்கு வரவும்.`
-          : `No active ${currentCropSimple} lot currently in the Cool Pod. Visit Hub for intake or message on WhatsApp to reserve a delivery slot.`
-      );
-      setTimeout(() => setFeedbackMessage(null), 6000);
-    }
+      }
+    );
   };
 
   const handleHold = (hours: number, autoSell: boolean) => {
@@ -112,8 +148,15 @@ export const TodayPriceScreen: React.FC = () => {
     speak(textToSpeak, lang);
   };
 
+  // Generate live badge text to show right above the buttons in SellHoldCard
+  const lotBadgeText = podLot
+    ? `📦 Lot #${podLot.lotNumber} in Cool Pod (${(podLot.weightGrams / 1000).toFixed(0)} kg, Grade ${podLot.grade}) • Ready for immediate sale`
+    : soldLot
+    ? `✅ Lot #${soldLot.lotNumber} (${currentCropSimple}) sold at ₹${soldLot.finalSalePricePaisePerKg ? (soldLot.finalSalePricePaisePerKg / 100).toFixed(1) : priceData?.buyerBidRupees || 14}/kg • Assigned to Collective Loads`
+    : undefined;
+
   return (
-    <div className="space-y-4 pb-8">
+    <div className="space-y-4 pb-8 relative">
       {/* Header banner */}
       <div className="flex items-center justify-between">
         <div>
@@ -139,7 +182,10 @@ export const TodayPriceScreen: React.FC = () => {
           return (
             <button
               key={crop.id}
-              onClick={() => setSelectedCrop(crop.id)}
+              onClick={() => {
+                setSelectedCrop(crop.id);
+                setFeedbackMessage(null);
+              }}
               className={`p-2.5 rounded-lg border text-center transition-all min-h-[56px] flex flex-col items-center justify-center ${
                 isSelected
                   ? 'border-accent bg-accent/10 text-accent font-semibold shadow-sm ring-1 ring-accent'
@@ -157,7 +203,17 @@ export const TodayPriceScreen: React.FC = () => {
       {feedbackMessage && (
         <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg flex items-start gap-2 text-xs text-ink animate-fadeIn shadow-xs">
           <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-          <p className="font-semibold text-ink leading-relaxed">{feedbackMessage}</p>
+          <div className="flex-1">
+            <p className="font-semibold text-ink leading-relaxed">{feedbackMessage}</p>
+            {onNavigateToLots && (
+              <button
+                onClick={onNavigateToLots}
+                className="mt-1 text-xs font-bold text-accent hover:underline flex items-center gap-1"
+              >
+                View updated lot in My Lots →
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -186,10 +242,12 @@ export const TodayPriceScreen: React.FC = () => {
           }
           recommendedAction={priceData?.recommendedAction || 'HOLD'}
           remainingHoldHours={podLot ? 58 : 72}
-          onSell={handleSell}
+          onSell={handleSellClick}
           onHold={handleHold}
           onListen={handleListen}
           isListening={isSpeaking}
+          isSelling={makeDecision.isPending}
+          soldBadgeText={lotBadgeText}
         />
       )}
 
@@ -213,6 +271,210 @@ export const TodayPriceScreen: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* POP-UP MODAL: SELL CONFIRMATION & SUCCESS DIALOG */}
+      {showSellModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-xl max-w-sm w-full p-5 shadow-2xl border border-border animate-scaleIn">
+            {/* Case 1: Sale Confirmed Celebration */}
+            {saleSuccessData ? (
+              <div className="text-center space-y-4 py-2">
+                <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 shadow-inner">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+
+                <div>
+                  <Badge variant="success" size="sm">
+                    SALE ORDER CONFIRMED
+                  </Badge>
+                  <h3 className="text-lg font-serif font-bold text-ink mt-1">
+                    Lot #{saleSuccessData.lotNumber} Locked & Queued!
+                  </h3>
+                  <p className="text-xs text-ink-muted mt-1">
+                    Sold to <strong className="text-ink">{saleSuccessData.buyer}</strong> at{' '}
+                    <strong className="text-emerald-700">₹{saleSuccessData.priceRupees.toFixed(1)}/kg</strong>.
+                  </p>
+                </div>
+
+                {/* Financial breakdown box */}
+                <div className="p-3 bg-stone-50 border border-stone-200 rounded-lg text-left text-xs space-y-1.5 font-mono">
+                  <div className="flex justify-between">
+                    <span className="text-ink-muted">Weight Sold:</span>
+                    <span className="font-bold text-ink">{saleSuccessData.weightKg} kg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ink-muted">Agreed Rate:</span>
+                    <span className="font-bold text-ink">₹{saleSuccessData.priceRupees}/kg</span>
+                  </div>
+                  <div className="flex justify-between border-t border-stone-200 pt-1 text-sm font-bold text-emerald-800">
+                    <span>Gross Realization:</span>
+                    <span>₹{saleSuccessData.gross.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Pipeline next steps */}
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-left text-[11px] space-y-1 text-emerald-950">
+                  <p className="flex items-center gap-1.5 font-semibold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    Transferred to Hub Console → Collective Loads
+                  </p>
+                  <p className="flex items-center gap-1.5 text-ink-muted">
+                    <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
+                    24h SLA Payout clock enqueued for direct UPI credit
+                  </p>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="w-1/2 min-h-[44px]"
+                    onClick={() => {
+                      setShowSellModal(false);
+                      setSaleSuccessData(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  {onNavigateToLots && (
+                    <Button
+                      variant="primary"
+                      className="w-1/2 min-h-[44px]"
+                      onClick={() => {
+                        setShowSellModal(false);
+                        setSaleSuccessData(null);
+                        onNavigateToLots();
+                      }}
+                    >
+                      View in My Lots →
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : podLot ? (
+              /* Case 2: Active Lot In Pod - Confirmation Dialog */
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-border pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-ink">Confirm Immediate Sale</h3>
+                      <p className="text-[11px] text-ink-muted">Lock in best wholesale market bid</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowSellModal(false)}
+                    className="text-ink-muted hover:text-ink p-1 rounded"
+                    aria-label="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Lot & Buyer Order Info */}
+                <div className="p-3 bg-surface border border-border rounded-lg space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-ink-muted">Lot Selected:</span>
+                    <span className="font-bold text-ink">
+                      Lot #{podLot.lotNumber} ({currentCropVariant})
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-ink-muted">Intake Weight & Grade:</span>
+                    <span className="font-bold text-ink">
+                      {(podLot.weightGrams / 1000).toFixed(0)} kg • Grade {podLot.grade}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-ink-muted">Verified Buyer:</span>
+                    <span className="font-bold text-accent">Annapurna Kirana Network</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-border pt-2">
+                    <span className="text-ink-muted">Lock-in Buyer Bid:</span>
+                    <span className="text-base font-extrabold text-[#1f6b3a]">
+                      ₹{priceData?.buyerBidRupees || 14}/kg
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-ink-muted text-[11px]">
+                    <span>Expected Gross:</span>
+                    <span className="font-mono font-bold text-ink">
+                      ₹{(((podLot.weightGrams / 1000) * (priceData?.buyerBidRupees || 14))).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Guarantee Banner */}
+                <div className="p-2 bg-emerald-50 border border-emerald-200 rounded text-[11px] text-emerald-950 flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <p>
+                    Guaranteed UPI payment settled within 24 hours of collective load dispatch.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    className="w-1/3 min-h-[48px]"
+                    onClick={() => setShowSellModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="sell"
+                    className="w-2/3 min-h-[48px]"
+                    disabled={makeDecision.isPending}
+                    onClick={handleConfirmSale}
+                  >
+                    {makeDecision.isPending ? 'Locking in...' : `Confirm Sale (₹${priceData?.buyerBidRupees || 14}/kg)`}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Case 3: No Active Lot in Pod for this crop */
+              <div className="text-center space-y-4 py-2">
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-700">
+                  <Info className="w-6 h-6" />
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-ink">
+                    No Active {currentCropSimple} in Cool Pod
+                  </h3>
+                  <p className="text-xs text-ink-muted mt-1 leading-relaxed">
+                    {soldLot
+                      ? `Your Lot #${soldLot.lotNumber} (${currentCropSimple}) has already been sold and is queued in Collective Loads!`
+                      : `You do not currently have an unsold ${currentCropSimple} lot in the Cool Pod. To sell, bring your harvest to Hub intake or switch to a crop with stored inventory.`}
+                  </p>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="w-1/2 min-h-[44px]"
+                    onClick={() => setShowSellModal(false)}
+                  >
+                    Close
+                  </Button>
+                  {onNavigateToLots && (
+                    <Button
+                      variant="primary"
+                      className="w-1/2 min-h-[44px]"
+                      onClick={() => {
+                        setShowSellModal(false);
+                        onNavigateToLots();
+                      }}
+                    >
+                      View My Lots →
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

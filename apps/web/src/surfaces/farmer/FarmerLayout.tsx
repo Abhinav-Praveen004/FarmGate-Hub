@@ -166,7 +166,9 @@ export const FarmerLayout: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1 p-4 pb-24 overflow-y-auto">
-          {activeTab === 'price' && <TodayPriceScreen />}
+          {activeTab === 'price' && (
+            <TodayPriceScreen onNavigateToLots={() => setActiveTab('lots')} />
+          )}
           {activeTab === 'lots' && (
             <MyLotsScreen
               onNavigateToReceipt={(lotId) => {

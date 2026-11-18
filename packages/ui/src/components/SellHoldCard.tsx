@@ -18,6 +18,8 @@ export interface SellHoldCardProps {
   onHold: (hours: number, autoSell: boolean) => void;
   onListen?: () => void;
   isListening?: boolean;
+  isSelling?: boolean;
+  soldBadgeText?: string;
   className?: string;
 }
 
@@ -35,6 +37,8 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
   onHold,
   onListen,
   isListening = false,
+  isSelling = false,
+  soldBadgeText,
   className = '',
 }) => {
   const [showHoldModal, setShowHoldModal] = useState(false);
@@ -140,6 +144,14 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
         </div>
       </div>
 
+      {/* Optional Lot Status Badge (Ready / Sold) */}
+      {soldBadgeText && (
+        <div className="mb-4 p-2.5 bg-emerald-50 border border-emerald-200/80 rounded-md flex items-center gap-2 text-xs text-emerald-950 font-semibold shadow-xs animate-fadeIn">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{soldBadgeText}</span>
+        </div>
+      )}
+
       {/* Large Action Buttons (≥56px touch target for outdoor use) */}
       <div className="grid grid-cols-2 gap-3">
         <Button
@@ -147,9 +159,10 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
           size="touch"
           icon={<TrendingUp className="w-6 h-6 mr-1" />}
           onClick={onSell}
+          disabled={isSelling}
           aria-label={`SELL NOW - ${cropName} at ₹${buyerBidRupees}/kg`}
         >
-          SELL NOW
+          {isSelling ? 'PROCESSING...' : 'SELL NOW'}
         </Button>
 
         <Button
