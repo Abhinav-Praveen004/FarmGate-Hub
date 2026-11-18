@@ -40,6 +40,7 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
     sendMessage.mutate({
       farmerId: activePersona.id,
       body: text.trim(),
+      lang,
     });
     setInputText('');
   };
@@ -82,7 +83,12 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose 
         </div>
 
         {/* WhatsApp Chat Area */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="WhatsApp chat history"
+          className="flex-1 p-4 overflow-y-auto space-y-3 focus:outline-none"
+        >
           {/* Welcome Message */}
           <div className="flex justify-start">
             <div className="bg-white text-[#111b21] rounded-lg rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-xs space-y-2 border border-black/5">

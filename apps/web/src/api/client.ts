@@ -193,11 +193,11 @@ export function useWhatsAppMessages(farmerId: string) {
 export function useSendWhatsAppMessage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ farmerId, body }: { farmerId: string; body: string }) =>
-      fetchJson<{ reply: string }>('/api/channels/whatsapp/incoming', {
+    mutationFn: ({ farmerId, body, lang }: { farmerId: string; body: string; lang?: string }) =>
+      fetchJson<{ success: boolean; reply: string; timestamp: string }>('/api/channels/whatsapp/incoming', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ farmerId, body }),
+        body: JSON.stringify({ farmerId, body, lang }),
       }),
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['whatsapp', vars.farmerId] });

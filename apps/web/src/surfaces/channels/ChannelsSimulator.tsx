@@ -22,8 +22,14 @@ export const ChannelsSimulator: React.FC = () => {
 
   // WhatsApp state
   const [whatsappInput, setWhatsappInput] = useState('');
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const { data: whatsappMessages } = useWhatsAppMessages(activePersona.id);
   const sendWhatsApp = useSendWhatsAppMessage();
+
+  // Scroll to bottom on new messages
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [whatsappMessages]);
 
   // Voice IVR state
   const [ivrCallActive, setIvrCallActive] = useState(false);
@@ -33,7 +39,7 @@ export const ChannelsSimulator: React.FC = () => {
   const handleWhatsAppSend = (text?: string) => {
     const body = text || whatsappInput;
     if (!body.trim()) return;
-    sendWhatsApp.mutate({ farmerId: activePersona.id, body: body.trim() });
+    sendWhatsApp.mutate({ farmerId: activePersona.id, body: body.trim(), lang });
     setWhatsappInput('');
   };
 
@@ -196,7 +202,12 @@ export const ChannelsSimulator: React.FC = () => {
               </div>
 
               {/* Chat Messages */}
-              <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[360px] p-2 text-xs">
+              <div
+                tabIndex={0}
+                role="region"
+                aria-label="WhatsApp message conversation"
+                className="space-y-2.5 flex-1 overflow-y-auto max-h-[360px] p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#075e54]/30 rounded-lg"
+              >
                 <div className="bg-white text-[#111b21] p-3 rounded-lg rounded-tl-none max-w-[85%] shadow-sm space-y-1 border border-black/5">
                   <p className="font-bold text-[#075e54]">FarmGate Hub Automated Alert:</p>
                   <p className="text-[#111b21] leading-relaxed">
@@ -228,6 +239,7 @@ export const ChannelsSimulator: React.FC = () => {
                     </div>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Quick Action Pills & Input */}
@@ -237,7 +249,8 @@ export const ChannelsSimulator: React.FC = () => {
                     <button
                       key={cmd}
                       onClick={() => handleWhatsAppSend(cmd)}
-                      className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 rounded-full text-xs font-semibold text-[#075e54] border border-[#075e54]/30 shadow-xs shrink-0 transition-colors"
+                      disabled={sendWhatsApp.isPending}
+                      className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 rounded-full text-xs font-semibold text-[#075e54] border border-[#075e54]/30 shadow-xs shrink-0 transition-colors disabled:opacity-50"
                     >
                       {cmd}
                     </button>
@@ -252,12 +265,14 @@ export const ChannelsSimulator: React.FC = () => {
                     value={whatsappInput}
                     onChange={(e) => setWhatsappInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleWhatsAppSend()}
-                    className="flex-1 bg-white text-[#111b21] placeholder-[#667781] border border-[#d1d7db] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#075e54]"
+                    disabled={sendWhatsApp.isPending}
+                    className="flex-1 bg-white text-[#111b21] placeholder-[#667781] border border-[#d1d7db] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#075e54] disabled:opacity-50"
                   />
                   <button
                     onClick={() => handleWhatsAppSend()}
+                    disabled={sendWhatsApp.isPending || !whatsappInput.trim()}
                     aria-label="Send WhatsApp message"
-                    className="p-2 bg-[#075e54] hover:bg-[#128c7e] text-white rounded-lg transition-colors shadow-xs"
+                    className="p-2 bg-[#075e54] hover:bg-[#128c7e] text-white rounded-lg transition-colors shadow-xs disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                   </button>
