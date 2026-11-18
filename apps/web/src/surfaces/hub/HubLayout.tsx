@@ -26,7 +26,7 @@ export const HubLayout: React.FC = () => {
     <div className="min-h-screen bg-bg text-ink pb-16">
       {/* Sub-header Toolbar */}
       <div className="bg-surface-elevated border-b border-border py-2.5 px-4 sm:px-6 shadow-sm sticky top-12 z-30">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-accent" />
@@ -87,7 +87,7 @@ export const HubLayout: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-6">
         <div className="flex gap-2 border-b border-border pb-px overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('intake')}
