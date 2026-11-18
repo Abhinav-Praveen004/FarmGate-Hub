@@ -152,7 +152,7 @@ export const HubLayout: React.FC = () => {
 
         {/* Tab Content */}
         <div className="pt-6">
-          {activeTab === 'intake' && <IntakeWizard />}
+          {activeTab === 'intake' && <IntakeWizard onNavigateToPod={() => setActiveTab('pod')} />}
           {activeTab === 'pod' && <CoolPodBoard />}
           {activeTab === 'loads' && <CollectiveLoads onNavigateToPayouts={() => setActiveTab('payouts')} />}
           {activeTab === 'payouts' && <PayoutsQueue />}

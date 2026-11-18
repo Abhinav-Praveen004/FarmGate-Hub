@@ -12,6 +12,7 @@ import {
   User,
   QrCode as QrIcon,
   RotateCcw,
+  Thermometer,
 } from 'lucide-react';
 import { formatWeightKg } from '@farmgate/shared';
 
@@ -22,7 +23,11 @@ const SAMPLE_FARMERS = [
   { id: 'FARMER-004', name: 'Suresh Gowda', village: 'Hoskote', phone: '+91 98450 44556' },
 ];
 
-export const IntakeWizard: React.FC = () => {
+export interface IntakeWizardProps {
+  onNavigateToPod?: () => void;
+}
+
+export const IntakeWizard: React.FC<IntakeWizardProps> = ({ onNavigateToPod }) => {
   const [selectedFarmerId, setSelectedFarmerId] = useState(SAMPLE_FARMERS[0].id);
   const [cratesCount, setCratesCount] = useState(5);
   const [scaleWeightKg, setScaleWeightKg] = useState(120.4);
@@ -403,14 +408,25 @@ export const IntakeWizard: React.FC = () => {
 
             {/* Success message if saved */}
             {successLot && (
-              <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg text-xs text-accent-ink space-y-1 animate-fadeIn">
-                <div className="flex items-center gap-1.5 font-bold text-accent">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <div className="p-3.5 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-xs space-y-2 animate-fadeIn shadow-xs">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-800">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                   <span>Lot #{successLot.lotNumber} Successfully Stored in Cool Pod!</span>
                 </div>
-                <p className="font-mono text-[11px]">
-                  Assigned Pod Slot: Bay 04 (11.5°C) • QR Code: {successLot.qrCode}
+                <p className="font-mono text-[11px] text-ink-muted">
+                  Assigned Pod Slot: Bay 04 (11.5°C pre-cooled) • QR: {successLot.qrCode} • Guaranteed Floor: ₹11.00/kg
                 </p>
+
+                {onNavigateToPod && (
+                  <Button
+                    variant="primary"
+                    onClick={onNavigateToPod}
+                    className="w-full mt-2 text-xs font-bold py-2.5 flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white shadow-sm"
+                  >
+                    <Thermometer className="w-4 h-4" />
+                    <span>View Lot #{successLot.lotNumber} in Cool Pod Board →</span>
+                  </Button>
+                )}
               </div>
             )}
 

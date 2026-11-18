@@ -48,6 +48,11 @@ buyerRouter.post('/orders', async (c) => {
   });
 });
 
+buyerRouter.get('/orders', async (c) => {
+  const orders = db.select().from(schema.buyerOrders).all();
+  return c.json({ orders });
+});
+
 // Aggregated Graded Stock (Privacy-Preserving, DPDP Compliant)
 buyerRouter.get('/stock', async (c) => {
   const allLots = db

@@ -12,26 +12,131 @@ import {
   TrendingDown,
   Layers,
   MapPin,
+  ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatRupees, formatWeightKg } from '@farmgate/shared';
+
+interface BuyerLot {
+  id: string;
+  number: number;
+  farmer: string;
+  weightKg: number;
+  qrCode: string;
+}
+
+interface BuyerOrder {
+  orderId: string;
+  loadNumber: string;
+  buyerName: string;
+  crop: string;
+  grade: string;
+  quantityKg: number;
+  priceRupeesKg: number;
+  totalEscrowRupees: number;
+  savingsRupees: number;
+  origin: string;
+  destination: string;
+  vehicle: string;
+  eta: string;
+  status: string;
+  depositStatus: string;
+  progressPercent: number;
+  lots: BuyerLot[];
+}
+
+const DEFAULT_ORDERS: BuyerOrder[] = [
+  {
+    orderId: 'ORD-771',
+    loadNumber: 'CL-04',
+    buyerName: 'Annapurna Kirana Network',
+    crop: 'Hybrid Tomato',
+    grade: 'Grade A',
+    quantityKg: 500,
+    priceRupeesKg: 14.0,
+    totalEscrowRupees: 7000,
+    savingsRupees: 1000,
+    origin: 'Kolar Hub #01',
+    destination: 'Annapurna DC, Whitefield',
+    vehicle: 'Truck TN-38-K-4412 (Insulated 11.5°C)',
+    eta: 'Today 16:30',
+    status: 'IN TRANSIT • ESCROW LOCKED',
+    depositStatus: 'Escrow 100% Cleared',
+    progressPercent: 75,
+    lots: [
+      { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra (Annur)', weightKg: 120, qrCode: 'FGH-ANNUR-2026-LOT214' },
+      { id: 'lot_212', number: 212, farmer: 'Murugan K. (Kolar)', weightKg: 240, qrCode: 'FGH-KOLAR-2026-LOT212' },
+      { id: 'lot_210', number: 210, farmer: 'Suresh Gowda (Hoskote)', weightKg: 140, qrCode: 'FGH-HOSKOTE-2026-LOT210' },
+    ],
+  },
+];
 
 export const BuyerPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'catalog' | 'orders' | 'traceability'>('catalog');
   const [orderQuantityKg, setOrderQuantityKg] = useState<number>(500);
   const [escrowDeposited, setEscrowDeposited] = useState<boolean>(true);
   const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
+  const [orders, setOrders] = useState<BuyerOrder[]>(DEFAULT_ORDERS);
 
   const pricePerKg = 14.0;
   const mandiBenchmarkKg = 16.0;
   const totalCost = orderQuantityKg * pricePerKg;
   const mandiCost = orderQuantityKg * mandiBenchmarkKg;
-  const buyerSavings = mandiCost - totalCost; // ₹1,000 savings (12.5%)
+  const buyerSavings = mandiCost - totalCost; // e.g. ₹1,000 savings (12.5%)
 
   const handlePlaceOrder = () => {
+    const newOrderId = `ORD-${Math.floor(773 + Math.random() * 50)}`;
+    const newLoadNum = `CL-0${orders.length + 5}`;
+
+    const newOrder: BuyerOrder = {
+      orderId: newOrderId,
+      loadNumber: newLoadNum,
+      buyerName: 'Annapurna Kirana Network',
+      crop: 'Hybrid Tomato',
+      grade: 'Grade A',
+      quantityKg: orderQuantityKg,
+      priceRupeesKg: pricePerKg,
+      totalEscrowRupees: totalCost,
+      savingsRupees: buyerSavings,
+      origin: 'Kolar Hub #01',
+      destination: 'Annapurna DC, Whitefield',
+      vehicle: 'Truck KA-04-E-8891 (Pre-cooled 11.5°C GPS Active)',
+      eta: 'Today 18:00',
+      status: 'ESCROW LOCKED • IN DISPATCH',
+      depositStatus: 'Escrow 100% Cleared',
+      progressPercent: 30,
+      lots: [
+        { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra (Annur)', weightKg: Math.round(orderQuantityKg * 0.25), qrCode: 'FGH-ANNUR-2026-LOT214' },
+        { id: 'lot_212', number: 212, farmer: 'Murugan K. (Kolar)', weightKg: Math.round(orderQuantityKg * 0.45), qrCode: 'FGH-KOLAR-2026-LOT212' },
+        { id: 'lot_210', number: 210, farmer: 'Suresh Gowda (Hoskote)', weightKg: Math.round(orderQuantityKg * 0.30), qrCode: 'FGH-HOSKOTE-2026-LOT210' },
+      ],
+    };
+
+    setOrders((prev) => [newOrder, ...prev]);
     setOrderSuccess(true);
-    setTimeout(() => setOrderSuccess(false), 6000);
+
+    // Persist to API
+    fetch('/api/buyer/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        buyerId: 'buyer_annapurna',
+        crop: 'tomato',
+        grade: 'A',
+        quantityGrams: orderQuantityKg * 1000,
+        offeredPricePaisePerKg: pricePerKg * 100,
+        deliveryWindowHours: 24,
+      }),
+    }).catch(() => {});
+
+    // Automatically transition to Active Dispatches & Escrow
+    setTimeout(() => {
+      setActiveTab('orders');
+    }, 1500);
   };
+
+  // Collect all unique lots across active orders for the Traceability tab
+  const allTraceableLots = orders.flatMap((o) => o.lots);
 
   return (
     <div className="min-h-screen bg-bg text-ink pb-16">
@@ -61,10 +166,11 @@ export const BuyerPortal: React.FC = () => {
         <div className="flex gap-2 border-b border-border pb-px overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('catalog')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'catalog'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'catalog'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-              }`}
+            }`}
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Graded Hub Supply</span>
@@ -72,24 +178,26 @@ export const BuyerPortal: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'orders'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'orders'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-              }`}
+            }`}
           >
             <Truck className="w-4 h-4" />
-            <span>Active Dispatches & Escrow</span>
+            <span>Active Dispatches & Escrow ({orders.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('traceability')}
-            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'traceability'
+            className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'traceability'
                 ? 'border-accent text-accent font-bold'
                 : 'border-transparent text-ink-muted hover:text-ink'
-              }`}
+            }`}
           >
             <QrIcon className="w-4 h-4" />
-            <span>Lot Traceability</span>
+            <span>Lot Traceability ({allTraceableLots.length} Lots)</span>
           </button>
         </div>
 
@@ -143,7 +251,7 @@ export const BuyerPortal: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Listing Item 2: Grade B Processing / Institutional Tomatoes */}
+                {/* Listing Item 2: Grade B Tomatoes */}
                 <div className="bg-surface p-4 rounded-xl border border-border space-y-3 opacity-90">
                   <div className="flex justify-between items-start">
                     <div>
@@ -195,10 +303,11 @@ export const BuyerPortal: React.FC = () => {
                         <button
                           key={qty}
                           onClick={() => setOrderQuantityKg(qty)}
-                          className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border ${orderQuantityKg === qty
-                              ? 'bg-accent text-white border-accent'
-                              : 'bg-surface border-border text-ink'
-                            }`}
+                          className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border transition-all ${
+                            orderQuantityKg === qty
+                              ? 'bg-accent text-white border-accent ring-1 ring-accent'
+                              : 'bg-surface border-border text-ink hover:border-border-strong'
+                          }`}
                         >
                           {qty} kg
                         </button>
@@ -230,14 +339,20 @@ export const BuyerPortal: React.FC = () => {
                   </p>
 
                   {orderSuccess && (
-                    <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg text-xs text-accent-ink space-y-1 animate-fadeIn">
-                      <div className="flex items-center gap-1.5 font-bold text-accent">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        <span>Order #ORD-771 Confirmed & Locked!</span>
+                    <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-800 space-y-2 animate-fadeIn">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        <span>Order Confirmed & Escrow Locked (₹{totalCost.toLocaleString('en-IN')})!</span>
                       </div>
-                      <p className="font-mono text-[11px]">
-                        Dispatched from Kolar Hub in Truck TN-38-K-4412. Track below.
+                      <p className="font-mono text-[11px] text-emerald-700">
+                        Consignment #{orders[0].loadNumber} is prepared for dispatch. Opening active tracking...
                       </p>
+                      <button
+                        onClick={() => setActiveTab('orders')}
+                        className="text-xs font-bold text-accent underline flex items-center gap-1"
+                      >
+                        <span>View in Active Dispatches & Escrow →</span>
+                      </button>
                     </div>
                   )}
 
@@ -257,112 +372,120 @@ export const BuyerPortal: React.FC = () => {
 
         {/* Tab 2: Active Dispatches & Escrow */}
         {activeTab === 'orders' && (
-          <div className="space-y-4">
-            <div className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-accent animate-pulse" />
-                  <h2 className="text-base font-bold text-ink">Active Collective Load: #CL-04</h2>
-                </div>
-                <Badge variant="success">IN TRANSIT • ON TIME</Badge>
-              </div>
-
-              {/* Transit Timeline */}
-              <div className="bg-surface p-4 rounded-xl border border-border space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-ink-muted block text-[11px]">Vehicle:</span>
-                    <span className="font-mono font-bold text-ink">Truck TN-38-K-4412 (Insulated)</span>
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <div key={order.orderId} className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-accent animate-pulse" />
+                    <h2 className="text-base font-bold text-ink">
+                      Active Collective Load: #{order.loadNumber} ({order.quantityKg} kg)
+                    </h2>
+                    <span className="text-xs font-mono text-accent">({order.orderId})</span>
                   </div>
-                  <div>
-                    <span className="text-ink-muted block text-[11px]">Origin:</span>
-                    <span className="font-bold text-ink">Kolar Hub #01</span>
-                  </div>
-                  <div>
-                    <span className="text-ink-muted block text-[11px]">Destination:</span>
-                    <span className="font-bold text-ink">Annapurna DC, Whitefield</span>
-                  </div>
-                  <div>
-                    <span className="text-ink-muted block text-[11px]">ETA:</span>
-                    <span className="font-mono font-bold text-accent">Today 16:30</span>
-                  </div>
+                  <Badge variant="success">{order.status}</Badge>
                 </div>
 
-                <div className="w-full bg-border/40 h-2 rounded-full overflow-hidden">
-                  <div className="bg-accent h-full rounded-full" style={{ width: '75%' }} />
-                </div>
-                <div className="flex justify-between text-[11px] font-mono text-ink-muted">
-                  <span>Hub Departure (14:30)</span>
-                  <span>Hoskote Tollgate (15:45)</span>
-                  <span>DC Inbound (16:30)</span>
-                </div>
-              </div>
-
-              {/* Traceability Link to Lots */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-ink">
-                  Aggregated Micro-Lots Inside This Truck:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 bg-surface rounded-lg border border-border">
-                    <div className="flex justify-between text-xs">
-                      <span className="font-mono font-bold text-accent">Lot #214</span>
-                      <span>120 kg</span>
+                {/* Transit Timeline */}
+                <div className="bg-surface p-4 rounded-xl border border-border space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Vehicle:</span>
+                      <span className="font-mono font-bold text-ink">{order.vehicle}</span>
                     </div>
-                    <p className="text-[11px] text-ink-muted mt-1">Farmer: Ramesh Chandra (Annur)</p>
-                    <Link to="/t/FGH-ANNUR-2026-LOT214" className="text-accent text-[11px] font-semibold underline mt-2 block">
-                      Inspect Traceability →
-                    </Link>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Origin:</span>
+                      <span className="font-bold text-ink">{order.origin}</span>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Destination:</span>
+                      <span className="font-bold text-ink">{order.destination}</span>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">ETA:</span>
+                      <span className="font-mono font-bold text-accent">{order.eta}</span>
+                    </div>
                   </div>
 
-                  <div className="p-3 bg-surface rounded-lg border border-border">
-                    <div className="flex justify-between text-xs">
-                      <span className="font-mono font-bold text-accent">Lot #212</span>
-                      <span>240 kg</span>
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-1">Farmer: Murugan K. (Kolar)</p>
-                    <Link to="/t/FGH-KOLAR-2026-LOT212" className="text-accent text-[11px] font-semibold underline mt-2 block">
-                      Inspect Traceability →
-                    </Link>
+                  <div className="w-full bg-border/40 h-2 rounded-full overflow-hidden">
+                    <div className="bg-accent h-full rounded-full transition-all" style={{ width: `${order.progressPercent}%` }} />
                   </div>
+                  <div className="flex justify-between text-[11px] font-mono text-ink-muted">
+                    <span>Hub Departure</span>
+                    <span>Cold-Chain Transit (11.5°C)</span>
+                    <span>DC Inbound SLA</span>
+                  </div>
+                </div>
 
-                  <div className="p-3 bg-surface rounded-lg border border-border">
-                    <div className="flex justify-between text-xs">
-                      <span className="font-mono font-bold text-accent">Lot #210</span>
-                      <span>140 kg</span>
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-1">Farmer: Suresh Gowda (Hoskote)</p>
-                    <Link to="/t/FGH-HOSKOTE-2026-LOT210" className="text-accent text-[11px] font-semibold underline mt-2 block">
-                      Inspect Traceability →
-                    </Link>
+                {/* Financial Summary */}
+                <div className="p-3 bg-surface rounded-lg border border-border flex flex-wrap items-center justify-between text-xs font-mono">
+                  <div>
+                    <span className="text-ink-muted">Escrow Locked:</span>{' '}
+                    <strong className="text-accent">₹{order.totalEscrowRupees.toLocaleString('en-IN')}</strong>{' '}
+                    ({order.quantityKg} kg @ ₹{order.priceRupeesKg}/kg)
+                  </div>
+                  <div className="text-emerald-700">
+                    <span className="text-ink-muted">Guaranteed Savings:</span>{' '}
+                    <strong>₹{order.savingsRupees.toLocaleString('en-IN')} vs Mandi</strong>
+                  </div>
+                </div>
+
+                {/* Traceability Link to Lots */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-ink">
+                    Aggregated Micro-Lots Inside Consignment #{order.loadNumber}:
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {order.lots.map((lot) => (
+                      <div key={lot.id} className="p-3 bg-surface rounded-lg border border-border flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between text-xs">
+                            <span className="font-mono font-bold text-accent">Lot #{lot.number}</span>
+                            <span className="font-mono font-bold text-ink">{lot.weightKg} kg</span>
+                          </div>
+                          <p className="text-[11px] text-ink-muted mt-1">Farmer: {lot.farmer}</p>
+                        </div>
+                        <Link
+                          to={`/t/${lot.qrCode}`}
+                          className="text-accent text-[11px] font-semibold underline mt-2.5 flex items-center gap-1 hover:opacity-80"
+                        >
+                          <span>Inspect Traceability →</span>
+                        </Link>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
 
         {/* Tab 3: Lot Traceability Explorer */}
         {activeTab === 'traceability' && (
           <div className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-ink">Public QR Traceability Explorer</h2>
+            <h2 className="text-base font-bold text-ink">Public QR Traceability Explorer ({allTraceableLots.length} Lots Available)</h2>
             <p className="text-xs text-ink-muted">
               Every crate sold to Annapurna contains an indelible QR code allowing consumers and store managers to verify harvest origin, grading, and farmer payout fairness.
             </p>
 
-            <div className="p-4 bg-surface rounded-xl border border-border flex items-center justify-between">
-              <div>
-                <span className="font-mono font-bold text-sm text-ink">QR Code: FGH-ANNUR-2026-LOT214</span>
-                <p className="text-xs text-ink-muted mt-0.5">Lot #214: 120 kg Grade A Hybrid Tomatoes (Ramesh Chandra)</p>
-              </div>
+            <div className="space-y-3">
+              {allTraceableLots.map((lot) => (
+                <div key={lot.id} className="p-4 bg-surface rounded-xl border border-border flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <span className="font-mono font-bold text-sm text-ink">QR Code: {lot.qrCode}</span>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      Lot #{lot.number}: {lot.weightKg} kg Grade A Hybrid Tomatoes ({lot.farmer})
+                    </p>
+                  </div>
 
-              <Link
-                to="/t/FGH-ANNUR-2026-LOT214"
-                className="btn btn-primary"
-                style={{ height: '40px', padding: '0 16px', fontSize: '12px' }}
-              >
-                <span>View Public Traceability Page →</span>
-              </Link>
+                  <Link
+                    to={`/t/${lot.qrCode}`}
+                    className="px-4 py-2 bg-accent text-white rounded-lg text-xs font-bold hover:opacity-90 flex items-center gap-1.5 transition-all"
+                  >
+                    <span>View Public Traceability Certificate →</span>
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
         )}
