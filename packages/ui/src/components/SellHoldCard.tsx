@@ -147,7 +147,7 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
           size="touch"
           icon={<TrendingUp className="w-6 h-6 mr-1" />}
           onClick={onSell}
-          aria-label={`Sell ${cropName} now at ₹${buyerBidRupees}/kg`}
+          aria-label={`SELL NOW - ${cropName} at ₹${buyerBidRupees}/kg`}
         >
           SELL NOW
         </Button>
@@ -157,7 +157,7 @@ export const SellHoldCard: React.FC<SellHoldCardProps> = ({
           size="touch"
           icon={<Clock className="w-6 h-6 mr-1" />}
           onClick={() => setShowHoldModal(true)}
-          aria-label={`Hold ${cropName} in cool pod`}
+          aria-label={`HOLD IN POD - ${cropName}`}
         >
           HOLD IN POD
         </Button>

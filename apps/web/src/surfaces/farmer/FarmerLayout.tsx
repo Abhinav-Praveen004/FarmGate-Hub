@@ -94,6 +94,7 @@ export const FarmerLayout: React.FC = () => {
               onClick={() => resetDemo()}
               disabled={isWarping}
               title="Reset Demo Data"
+              aria-label="Reset Demo Data"
               className="p-1 rounded bg-surface hover:bg-border text-ink-muted hover:text-ink border border-border"
             >
               <RotateCcw className="w-3 h-3" />
@@ -146,6 +147,7 @@ export const FarmerLayout: React.FC = () => {
             </div>
 
             <select
+              aria-label="Select Farmer Persona"
               value={activePersona.id}
               onChange={(e) => {
                 const found = PERSONAS.find((p) => p.id === e.target.value);
@@ -190,6 +192,7 @@ export const FarmerLayout: React.FC = () => {
           onClick={() => setIsWhatsAppOpen(true)}
           className="fixed bottom-20 right-4 sm:right-[calc(50%-200px)] z-30 w-12 h-12 rounded-full bg-[#25D366] text-white shadow-lg flex items-center justify-center hover:bg-[#20ba59] active:scale-95 transition-all"
           title="Open WhatsApp Alert Simulator"
+          aria-label="Open WhatsApp Alert Simulator"
         >
           <MessageCircle className="w-6 h-6" />
           <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white" />

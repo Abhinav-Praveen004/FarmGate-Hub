@@ -55,11 +55,15 @@ export const CoolPodBoard: React.FC = () => {
   const triggerFault = async (fault: 'power_cut' | 'door_open' | 'normal') => {
     setIsUpdatingFault(true);
     try {
-      await fetch('/api/hub/pod/fault', {
+      const res = await fetch('/api/hub/pod/fault', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fault }),
       });
+      const data = await res.json();
+      if (data.telemetry) {
+        setTelemetry(data.telemetry);
+      }
       setActiveFault(fault);
       await fetchTelemetry();
     } catch (err) {

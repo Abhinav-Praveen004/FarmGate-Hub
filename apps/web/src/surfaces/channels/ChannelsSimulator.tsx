@@ -244,6 +244,7 @@ export const ChannelsSimulator: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
+                    aria-label="Type a WhatsApp message"
                     placeholder="Type a message (e.g. PRICE, LOTS)..."
                     value={whatsappInput}
                     onChange={(e) => setWhatsappInput(e.target.value)}
@@ -252,6 +253,7 @@ export const ChannelsSimulator: React.FC = () => {
                   />
                   <button
                     onClick={() => handleWhatsAppSend()}
+                    aria-label="Send WhatsApp message"
                     className="w-9 h-9 rounded-full bg-[#075e54] text-white flex items-center justify-center hover:bg-[#064e45]"
                   >
                     <Send className="w-4 h-4" />

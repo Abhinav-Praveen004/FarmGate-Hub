@@ -141,15 +141,32 @@ hubRouter.get('/pod', async (c) => {
 // Pod Simulation Controls (Power cut, Open Door)
 hubRouter.post('/pod/simulate', async (c) => {
   const body = await c.req.json();
-  const { action } = body;
+  const action = body.action || body.fault;
 
   if (action === 'power_cut') {
     defaultSensorFeed.triggerPowerCut();
-  } else if (action === 'restore_grid') {
+  } else if (action === 'restore_grid' || action === 'normal') {
     defaultSensorFeed.restoreGrid();
-  } else if (action === 'open_door') {
+  } else if (action === 'open_door' || action === 'door_open') {
     defaultSensorFeed.triggerDoorOpen(true);
   } else if (action === 'close_door') {
+    defaultSensorFeed.triggerDoorOpen(false);
+  }
+
+  return c.json({ success: true, telemetry: defaultSensorFeed.getTelemetry() });
+});
+
+hubRouter.post('/pod/fault', async (c) => {
+  const body = await c.req.json();
+  const fault = body.fault || body.action;
+
+  if (fault === 'power_cut') {
+    defaultSensorFeed.triggerPowerCut();
+  } else if (fault === 'normal' || fault === 'restore_grid') {
+    defaultSensorFeed.restoreGrid();
+  } else if (fault === 'door_open') {
+    defaultSensorFeed.triggerDoorOpen(true);
+  } else if (fault === 'close_door') {
     defaultSensorFeed.triggerDoorOpen(false);
   }
 

@@ -76,6 +76,7 @@ export const HubLayout: React.FC = () => {
                 onClick={() => resetDemo()}
                 disabled={isWarping}
                 title="Reset Demo Data"
+                aria-label="Reset Demo Data"
                 className="p-1 rounded bg-surface hover:bg-border text-ink-muted hover:text-ink border border-border"
               >
                 <RotateCcw className="w-3.5 h-3.5" />

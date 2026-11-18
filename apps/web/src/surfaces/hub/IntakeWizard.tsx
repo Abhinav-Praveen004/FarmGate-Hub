@@ -178,6 +178,7 @@ export const IntakeWizard: React.FC = () => {
                   <span className="text-xs text-ink-muted block">Crates</span>
                   <input
                     type="number"
+                    aria-label="Crates count"
                     min={1}
                     max={50}
                     value={cratesCount}
@@ -224,6 +225,7 @@ export const IntakeWizard: React.FC = () => {
                 </div>
                 <input
                   type="range"
+                  aria-label="Blemish or damage percentage"
                   min={0}
                   max={20}
                   value={blemishPercent}
@@ -307,6 +309,7 @@ export const IntakeWizard: React.FC = () => {
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="font-medium text-ink">Operator Grade Override (Audit Logged):</span>
                 <select
+                  aria-label="Operator Grade Override"
                   value={overrideGrade}
                   onChange={(e) => setOverrideGrade(e.target.value)}
                   className="bg-surface border border-border rounded px-2 py-1 text-xs text-ink focus:outline-none focus:ring-1 focus:ring-accent"
