@@ -23,6 +23,7 @@ const BUYER_ORDERS = [
     id: 'ORD-771',
     buyerName: 'Annapurna Retail Network',
     crop: 'Tomato',
+    icon: '🍅',
     grade: 'A',
     quantityKg: 500,
     priceRupeesKg: 14.0,
@@ -34,6 +35,7 @@ const BUYER_ORDERS = [
     id: 'ORD-772',
     buyerName: 'FreshBasket Supermarkets',
     crop: 'Tomato',
+    icon: '🍅',
     grade: 'B',
     quantityKg: 300,
     priceRupeesKg: 11.5,
@@ -42,17 +44,50 @@ const BUYER_ORDERS = [
     reliability: '95% on-time payment',
   },
   {
+    id: 'ORD-774',
+    buyerName: 'Sahyadri & Keventer Foods',
+    crop: 'Potato',
+    icon: '🥔',
+    grade: 'A',
+    quantityKg: 120,
+    priceRupeesKg: 18.0,
+    deliveryWindow: 'Today 18:00',
+    depositStatus: 'Escrow 100% Cleared',
+    reliability: '99% on-time payment',
+  },
+  {
     id: 'ORD-773',
     buyerName: 'Spiceland HoReCa Network',
     crop: 'Chilli',
+    icon: '🌶️',
     grade: 'A',
-    quantityKg: 120,
+    quantityKg: 100,
     priceRupeesKg: 42.0,
     deliveryWindow: 'Tomorrow 08:00',
     depositStatus: 'Escrow 100% Cleared',
     reliability: '99% on-time payment',
   },
+  {
+    id: 'ORD-775',
+    buyerName: 'Metro Cash & Carry Wholesale',
+    crop: 'Onion',
+    icon: '🧅',
+    grade: 'A',
+    quantityKg: 200,
+    priceRupeesKg: 24.0,
+    deliveryWindow: 'Tomorrow 10:00',
+    depositStatus: 'Escrow 100% Cleared',
+    reliability: '97% on-time payment',
+  },
 ];
+
+const BUYER_DB_ORDER_MAP: Record<string, string> = {
+  'ORD-771': 'order_kirana_500kg',
+  'ORD-772': 'order_freshbite_200kg',
+  'ORD-773': 'order_chilli_100kg',
+  'ORD-774': 'order_potato_500kg',
+  'ORD-775': 'order_onion_300kg',
+};
 
 const FARMER_NAMES: Record<string, string> = {
   farmer_meena: 'Ramesh Chandra',
@@ -78,7 +113,9 @@ const FALLBACK_LOTS = [
   { id: 'lot_212', number: 212, farmer: 'Murugan K.', crop: 'tomato', weightKg: 240, grade: 'A', podHours: 22, score: 82, isSoldByFarmer: false, status: 'IN_POD' },
   { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', crop: 'tomato', weightKg: 140, grade: 'A', podHours: 18, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
   { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', crop: 'tomato', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
-  { id: 'lot_215', number: 215, farmer: 'Ramesh Chandra', crop: 'chilli', weightKg: 120, grade: 'A', podHours: 4, score: 92, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_215', number: 215, farmer: 'Ramesh Chandra', crop: 'chilli', weightKg: 100, grade: 'A', podHours: 4, score: 92, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_216', number: 216, farmer: 'Murugan K.', crop: 'potato', weightKg: 120, grade: 'A', podHours: 6, score: 85, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_217', number: 217, farmer: 'Ramesh Chandra', crop: 'onion', weightKg: 150, grade: 'A', podHours: 8, score: 88, isSoldByFarmer: true, status: 'IN_POD' },
 ];
 
 export interface CollectiveLoadsProps {
@@ -86,7 +123,13 @@ export interface CollectiveLoadsProps {
 }
 
 export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPayouts }) => {
-  const [selectedOrderId, setSelectedOrderId] = useState<string>('ORD-771');
+  const [selectedOrderId, setSelectedOrderId] = useState<string>(() => {
+    const activeCrop = localStorage.getItem('farmgate_farmer_active_crop')?.toLowerCase();
+    if (activeCrop?.includes('potato')) return 'ORD-774';
+    if (activeCrop?.includes('chilli')) return 'ORD-773';
+    if (activeCrop?.includes('onion')) return 'ORD-775';
+    return 'ORD-771';
+  });
   const [selectedLotIds, setSelectedLotIds] = useState<string[]>(['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
   const [isDispatching, setIsDispatching] = useState(false);
   const [dispatchedManifest, setDispatchedManifest] = useState<any>(null);
@@ -157,6 +200,50 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
   const totalValueRupees = totalWeightKg * activeOrder.priceRupeesKg;
   const isTargetMet = totalWeightKg >= activeOrder.quantityKg;
 
+  // Auto-switch to an order that matches available lots in the Cool Pod if current order has 0 matching lots
+  React.useEffect(() => {
+    if (!rawLots || rawLots.length === 0) return;
+
+    const hasLotsForCurrentOrder = rawLots.some((l) => {
+      const cropMatch =
+        l.crop.toLowerCase().includes(activeOrder.crop.toLowerCase()) ||
+        activeOrder.crop.toLowerCase().includes(l.crop.toLowerCase());
+      return (
+        cropMatch &&
+        (l.status.toUpperCase() === 'IN_POD' ||
+          l.status.toUpperCase() === 'SOLD' ||
+          l.status.toUpperCase() === 'GRADED')
+      );
+    });
+
+    if (!hasLotsForCurrentOrder) {
+      const matchingOrder = BUYER_ORDERS.find((order) =>
+        rawLots.some((l) => {
+          const cropMatch =
+            l.crop.toLowerCase().includes(order.crop.toLowerCase()) ||
+            order.crop.toLowerCase().includes(l.crop.toLowerCase());
+          return (
+            cropMatch &&
+            (l.status.toUpperCase() === 'IN_POD' ||
+              l.status.toUpperCase() === 'SOLD' ||
+              l.status.toUpperCase() === 'GRADED')
+          );
+        })
+      );
+      if (matchingOrder) {
+        setSelectedOrderId(matchingOrder.id);
+      }
+    }
+  }, [rawLots, activeOrder.crop]);
+
+  // Auto-select matching lots when active order changes
+  React.useEffect(() => {
+    const matching = availableLots.filter((l) => l.grade === activeOrder.grade).map((l) => l.id);
+    if (matching.length > 0) {
+      setSelectedLotIds(matching);
+    }
+  }, [selectedOrderId, availableLots.length]);
+
   const handleConfirmDispatch = async () => {
     setIsDispatching(true);
     try {
@@ -164,7 +251,7 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          buyerOrderId: activeOrder.id === 'ORD-771' ? 'order_kirana_500kg' : 'order_freshbite_200kg',
+          buyerOrderId: BUYER_DB_ORDER_MAP[activeOrder.id] || 'order_kirana_500kg',
           lotIds: selectedLotIds,
           dispatchedWeightKg: totalWeightKg,
         }),
@@ -235,14 +322,6 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                     key={order.id}
                     onClick={() => {
                       setSelectedOrderId(order.id);
-                      if (order.crop.toLowerCase().includes('chilli')) {
-                        const chilliLots = availableLots.filter((l) => l.crop?.toLowerCase().includes('chilli')).map((l) => l.id);
-                        setSelectedLotIds(chilliLots.length > 0 ? chilliLots : ['lot_215']);
-                      } else if (order.grade === 'B') {
-                        setSelectedLotIds(['LOT-211']);
-                      } else {
-                        setSelectedLotIds(['LOT-214', 'LOT-212', 'LOT-210']);
-                      }
                     }}
                     className={`w-full p-4 rounded-xl border text-left transition-all ${isSelected
                         ? 'border-accent bg-accent/5 ring-1 ring-accent'
@@ -251,7 +330,11 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="font-mono text-[11px] font-bold text-accent">{order.id}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] font-bold text-accent">{order.id}</span>
+                          <span className="text-sm">{order.icon}</span>
+                          <span className="text-xs font-semibold text-ink-muted">({order.crop})</span>
+                        </div>
                         <h3 className="text-sm font-bold text-ink mt-0.5">{order.buyerName}</h3>
                       </div>
                       <Badge variant={order.grade === 'A' ? 'grade_a' : 'grade_b'}>
@@ -300,58 +383,101 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
 
             {/* Lots Checklist */}
             <div className="space-y-2.5">
-              {displayedLots.map((lot) => {
-                const isSelected = selectedLotIds.includes(lot.id);
-                return (
-                  <div
-                    key={lot.id}
-                    onClick={() => toggleLot(lot.id)}
-                    className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${isSelected
-                        ? 'border-accent bg-accent/10 ring-1 ring-accent'
-                        : 'border-border bg-surface hover:border-border-strong'
+              {displayedLots.length === 0 ? (
+                <div className="p-8 bg-surface border border-dashed border-border rounded-xl text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto text-3xl shadow-xs">
+                    {activeOrder.icon || '📦'}
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-ink">
+                      No Grade {activeOrder.grade} {activeOrder.crop} lots currently ready in Cool Pod
+                    </h4>
+                    <p className="text-xs text-ink-muted max-w-md mx-auto mt-1.5 leading-relaxed">
+                      {rawLots && rawLots.length > 0
+                        ? `You have ${rawLots.length} lot(s) of other crops in the pod. Click below to switch to the matching buyer order:`
+                        : 'Intake fresh produce at the Hub Console to grade and store lots in the solar cool pod.'}
+                    </p>
+                  </div>
+
+                  {rawLots && rawLots.length > 0 && (
+                    <div className="pt-2 flex flex-wrap justify-center gap-2">
+                      {BUYER_ORDERS.filter((o) =>
+                        rawLots.some(
+                          (rl) =>
+                            rl.crop.toLowerCase().includes(o.crop.toLowerCase()) ||
+                            o.crop.toLowerCase().includes(rl.crop.toLowerCase())
+                        )
+                      ).map((o) => (
+                        <Button
+                          key={o.id}
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setSelectedOrderId(o.id)}
+                          className="text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                        >
+                          <span>
+                            Switch to {o.icon} {o.id} ({o.crop} • {o.buyerName}) →
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                displayedLots.map((lot) => {
+                  const isSelected = selectedLotIds.includes(lot.id);
+                  return (
+                    <div
+                      key={lot.id}
+                      onClick={() => toggleLot(lot.id)}
+                      className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-accent bg-accent/10 ring-1 ring-accent'
+                          : 'border-border bg-surface hover:border-border-strong'
                       }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => { }}
-                        className="w-4 h-4 accent-accent rounded"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono font-bold text-xs text-ink">Lot #{lot.number}</span>
-                          <span className="text-xs font-semibold text-ink">{lot.farmer}</span>
-                          <Badge variant={lot.grade === 'A' ? 'grade_a' : 'grade_b'} size="sm">
-                            Grade {lot.grade}
-                          </Badge>
-                          {lot.isSoldByFarmer ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              AUTHORIZED (Sell Now)
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                              <Clock className="w-3 h-3 text-amber-600" />
-                              In Pod ({lot.podHours}h)
-                            </span>
-                          )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => { }}
+                          className="w-4 h-4 accent-accent rounded"
+                        />
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-bold text-xs text-ink">Lot #{lot.number}</span>
+                            <span className="text-xs font-semibold text-ink">{lot.farmer}</span>
+                            <Badge variant={lot.grade === 'A' ? 'grade_a' : 'grade_b'} size="sm">
+                              Grade {lot.grade}
+                            </Badge>
+                            {lot.isSoldByFarmer ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                AUTHORIZED (Sell Now)
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                In Pod ({lot.podHours}h)
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-ink-muted mt-0.5">
+                            In Pod: {lot.podHours}h • Algorithm Fit: {lot.score}% Match
+                          </p>
                         </div>
-                        <p className="text-[11px] text-ink-muted mt-0.5">
-                          In Pod: {lot.podHours}h • Algorithm Fit: {lot.score}% Match
-                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-sm text-ink">{lot.weightKg} kg</span>
+                        <span className="text-[11px] text-accent block font-mono">
+                          ₹{(lot.weightKg * activeOrder.priceRupeesKg).toLocaleString('en-IN')}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="text-right">
-                      <span className="font-mono font-bold text-sm text-ink">{lot.weightKg} kg</span>
-                      <span className="text-[11px] text-accent block font-mono">
-                        ₹{(lot.weightKg * activeOrder.priceRupeesKg).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Load Assembly Summary Box */}
@@ -388,7 +514,10 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                   <p className="text-emerald-700 font-bold">
                     ✓ 24-Hour Payout SLA Activated ({dispatchedManifest.lotsCount} participating lots queued)
                   </p>
-                  <p>✓ Automated WhatsApp notification sent to Ramesh Chandra, Murugan K., Suresh Gowda.</p>
+                  <p>
+                    ✓ Automated WhatsApp notification sent to{' '}
+                    {Array.from(new Set(selectedLots.map((l) => l.farmer))).join(', ') || 'participating farmers'}.
+                  </p>
                 </div>
 
                 {/* Downstream Actions Across Modules */}
