@@ -81,9 +81,13 @@ const FALLBACK_LOTS = [
 
 export interface CollectiveLoadsProps {
   onNavigateToPayouts?: () => void;
+  onNavigateToGradeC?: () => void;
 }
 
-export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPayouts }) => {
+export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({
+  onNavigateToPayouts,
+  onNavigateToGradeC,
+}) => {
   const { data: rawLots, refetch: refetchLots } = useFarmerLots();
 
   // Exactly TWO Verified Buyers
@@ -156,6 +160,17 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
   // Annapurna (Grade A) strictly displays Grade A lots across all vegetables.
   // FreshBasket (Grade B) strictly displays Grade B lots across all vegetables.
   const displayedLots = allAvailableLots.filter((l) => l.grade === activeOrder.grade);
+
+  // Check for any Grade C lots stored in system
+  const gradeCLots = (rawLots || [])
+    .filter((l: any) => (l.grade || '').toUpperCase() === 'C')
+    .map((l: any) => ({
+      id: String(l.id),
+      number: l.lotNumber || Number(String(l.id).replace(/\D/g, '')),
+      crop: getCropInfo(l.crop).name,
+      farmer: FARMER_NAMES[l.farmerId] || l.farmerName || l.farmerId,
+      weightKg: Math.round((l.weightGrams || 120000) / 1000),
+    }));
 
   // Auto-select all matching lots when the selected order changes
   useEffect(() => {
@@ -268,11 +283,10 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                     key={order.id}
                     type="button"
                     onClick={() => setSelectedOrderId(order.id)}
-                    className={`w-full p-4 rounded-xl border text-left transition-all ${
-                      isSelected
-                        ? 'border-accent bg-accent/5 ring-1 ring-accent'
-                        : 'border-border bg-surface hover:border-border-strong'
-                    }`}
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${isSelected
+                      ? 'border-accent bg-accent/5 ring-1 ring-accent'
+                      : 'border-border bg-surface hover:border-border-strong'
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -313,6 +327,32 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                 );
               })}
             </div>
+
+            {/* Grade C Waste-to-Value Notification */}
+            {gradeCLots.length > 0 && (
+              <div className="p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-xl space-y-2 text-xs mt-3">
+                <div className="flex items-start gap-2.5">
+                  <span className="text-xl leading-none">♻️</span>
+                  <div>
+                    <h4 className="font-bold text-amber-950">
+                      {gradeCLots.length} Grade C Lot ({gradeCLots.map((l) => `${l.crop} Lot #${l.number}`).join(', ')}) Detected
+                    </h4>
+                    <p className="text-[11px] text-amber-800 leading-normal mt-0.5">
+                      Fresh retail buyers only procure Grade A & B. Sub-optimal/blemished Grade C produce is diverted to food processors to recover value.
+                    </p>
+                  </div>
+                </div>
+                {onNavigateToGradeC && (
+                  <button
+                    type="button"
+                    onClick={onNavigateToGradeC}
+                    className="w-full py-1.5 px-2 bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-2xs"
+                  >
+                    <span>Route via Grade-C Waste-to-Value Tab →</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -370,17 +410,16 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                     <div
                       key={lot.id}
                       onClick={() => toggleLot(lot.id)}
-                      className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-accent bg-accent/10 ring-1 ring-accent'
-                          : 'border-border bg-surface hover:border-border-strong'
-                      }`}
+                      className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${isSelected
+                        ? 'border-accent bg-accent/10 ring-1 ring-accent'
+                        : 'border-border bg-surface hover:border-border-strong'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="w-4 h-4 accent-accent rounded"
                         />
                         <div>
