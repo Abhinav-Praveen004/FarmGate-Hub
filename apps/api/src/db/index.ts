@@ -11,8 +11,40 @@ export function createDatabase(dbPath: string = 'farmgate.sqlite') {
   // Auto-create tables if they don't exist
   initSchema(sqlite);
 
+  // Auto-seed default buyer orders and crops if empty
+  seedReferenceDataIfEmpty(sqlite);
+
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
+}
+
+export function seedReferenceDataIfEmpty(sqlite: Database.Database) {
+  try {
+    const row = sqlite.prepare('SELECT count(*) as count FROM buyer_orders').get() as { count: number };
+    if (!row || row.count === 0) {
+      sqlite.exec(`
+        INSERT OR IGNORE INTO buyers (id, name, type, phone, reliability_score) VALUES
+          ('buyer_annapurna', 'Annapurna Retail Network', 'retail', '+91 00000 00001', 98),
+          ('buyer_freshbite', 'FreshBasket Supermarkets', 'supermarket', '+91 00000 00002', 95),
+          ('buyer_sahyadri', 'Sahyadri & Keventer Foods', 'fpo', '+91 00000 00003', 99);
+
+        INSERT OR IGNORE INTO crops (name, floor_price_paise_per_kg, baseline_mandi_price_paise_per_kg, retail_reference_price_paise_per_kg) VALUES
+          ('tomato', 1100, 900, 3000),
+          ('potato', 1400, 1200, 3500),
+          ('onion', 1800, 1500, 4200),
+          ('chilli', 3200, 2800, 7000);
+
+        INSERT OR IGNORE INTO buyer_orders (id, buyer_id, crop, grade, quantity_grams, offered_price_paise_per_kg, delivery_window_hours, deposit_cleared, status, created_at) VALUES
+          ('order_kirana_500kg', 'buyer_annapurna', 'tomato', 'A', 500000, 1400, 24, 1, 'open', '2026-11-18T00:00:00Z'),
+          ('order_freshbite_200kg', 'buyer_freshbite', 'tomato', 'B', 200000, 1150, 48, 1, 'open', '2026-11-18T02:00:00Z'),
+          ('order_potato_500kg', 'buyer_sahyadri', 'potato', 'A', 500000, 1800, 24, 1, 'open', '2026-11-18T01:30:00Z'),
+          ('order_onion_300kg', 'buyer_freshbite', 'onion', 'A', 300000, 2400, 24, 1, 'open', '2026-11-18T01:00:00Z'),
+          ('order_chilli_100kg', 'buyer_annapurna', 'chilli', 'A', 100000, 4200, 24, 1, 'open', '2026-11-18T02:00:00Z');
+      `);
+    }
+  } catch (err) {
+    console.warn('Auto-seed reference check warning:', err);
+  }
 }
 
 export function initSchema(sqlite: Database.Database) {

@@ -69,9 +69,12 @@ export const CoolPodBoard: React.FC = () => {
 
   const fetchTelemetry = async () => {
     try {
-      const res = await fetch('/api/hub/pod/telemetry');
-      const data = await res.json();
-      if (data) setTelemetry(data);
+      const res = await fetch('/api/hub/pod');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.telemetry) setTelemetry(data.telemetry);
+        else if (data.temperatureCelsius !== undefined) setTelemetry(data);
+      }
     } catch {
       // Keep state
     }

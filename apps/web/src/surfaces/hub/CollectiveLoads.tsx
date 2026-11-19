@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Button } from '@farmgate/ui';
 import { useFarmerLots } from '../../api/client';
@@ -9,84 +9,23 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
-  FileSpreadsheet,
-  AlertCircle,
   Clock,
   CreditCard,
-  ExternalLink,
   RotateCcw,
 } from 'lucide-react';
-import { formatRupees, formatWeightKg } from '@farmgate/shared';
 
-const BUYER_ORDERS = [
-  {
-    id: 'ORD-771',
-    buyerName: 'Annapurna Retail Network',
-    crop: 'Tomato',
-    icon: '🍅',
-    grade: 'A',
-    quantityKg: 500,
-    priceRupeesKg: 14.0,
-    deliveryWindow: 'Today 16:00',
-    depositStatus: 'Escrow 100% Cleared',
-    reliability: '98% on-time payment',
-  },
-  {
-    id: 'ORD-772',
-    buyerName: 'FreshBasket Supermarkets',
-    crop: 'Tomato',
-    icon: '🍅',
-    grade: 'B',
-    quantityKg: 300,
-    priceRupeesKg: 11.5,
-    deliveryWindow: 'Tomorrow 09:00',
-    depositStatus: 'Escrow 100% Cleared',
-    reliability: '95% on-time payment',
-  },
-  {
-    id: 'ORD-774',
-    buyerName: 'Sahyadri & Keventer Foods',
-    crop: 'Potato',
-    icon: '🥔',
-    grade: 'A',
-    quantityKg: 120,
-    priceRupeesKg: 18.0,
-    deliveryWindow: 'Today 18:00',
-    depositStatus: 'Escrow 100% Cleared',
-    reliability: '99% on-time payment',
-  },
-  {
-    id: 'ORD-773',
-    buyerName: 'Spiceland HoReCa Network',
-    crop: 'Chilli',
-    icon: '🌶️',
-    grade: 'A',
-    quantityKg: 100,
-    priceRupeesKg: 42.0,
-    deliveryWindow: 'Tomorrow 08:00',
-    depositStatus: 'Escrow 100% Cleared',
-    reliability: '99% on-time payment',
-  },
-  {
-    id: 'ORD-775',
-    buyerName: 'Metro Cash & Carry Wholesale',
-    crop: 'Onion',
-    icon: '🧅',
-    grade: 'A',
-    quantityKg: 200,
-    priceRupeesKg: 24.0,
-    deliveryWindow: 'Tomorrow 10:00',
-    depositStatus: 'Escrow 100% Cleared',
-    reliability: '97% on-time payment',
-  },
-];
+export interface VegetableConfig {
+  name: string;
+  icon: string;
+  gradeAPrice: number;
+  gradeBPrice: number;
+}
 
-const BUYER_DB_ORDER_MAP: Record<string, string> = {
-  'ORD-771': 'order_kirana_500kg',
-  'ORD-772': 'order_freshbite_200kg',
-  'ORD-773': 'order_chilli_100kg',
-  'ORD-774': 'order_potato_500kg',
-  'ORD-775': 'order_onion_300kg',
+export const VEGETABLE_CONFIGS: Record<string, VegetableConfig> = {
+  potato: { name: 'Potato', icon: '🥔', gradeAPrice: 18.0, gradeBPrice: 14.5 },
+  tomato: { name: 'Tomato', icon: '🍅', gradeAPrice: 14.0, gradeBPrice: 11.5 },
+  chilli: { name: 'Chilli', icon: '🌶️', gradeAPrice: 42.0, gradeBPrice: 34.0 },
+  onion: { name: 'Onion', icon: '🧅', gradeAPrice: 24.0, gradeBPrice: 19.0 },
 };
 
 const FARMER_NAMES: Record<string, string> = {
@@ -109,13 +48,13 @@ const FARMER_NAMES: Record<string, string> = {
 };
 
 const FALLBACK_LOTS = [
-  { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra', crop: 'tomato', weightKg: 120, grade: 'A', podHours: 14, score: 78, isSoldByFarmer: true, status: 'SOLD' },
+  { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra', crop: 'tomato', weightKg: 120, grade: 'A', podHours: 14, score: 78, isSoldByFarmer: true, status: 'IN_POD' },
   { id: 'lot_212', number: 212, farmer: 'Murugan K.', crop: 'tomato', weightKg: 240, grade: 'A', podHours: 22, score: 82, isSoldByFarmer: false, status: 'IN_POD' },
-  { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', crop: 'tomato', weightKg: 140, grade: 'A', podHours: 18, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
   { id: 'lot_211', number: 211, farmer: 'Lakshmi Devi', crop: 'tomato', weightKg: 140, grade: 'B', podHours: 28, score: 75, isSoldByFarmer: false, status: 'IN_POD' },
-  { id: 'lot_215', number: 215, farmer: 'Ramesh Chandra', crop: 'chilli', weightKg: 100, grade: 'A', podHours: 4, score: 92, isSoldByFarmer: true, status: 'IN_POD' },
-  { id: 'lot_216', number: 216, farmer: 'Murugan K.', crop: 'potato', weightKg: 120, grade: 'A', podHours: 6, score: 85, isSoldByFarmer: true, status: 'IN_POD' },
-  { id: 'lot_217', number: 217, farmer: 'Ramesh Chandra', crop: 'onion', weightKg: 150, grade: 'A', podHours: 8, score: 88, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_215', number: 215, farmer: 'Murugan K.', crop: 'potato', weightKg: 120, grade: 'A', podHours: 14, score: 85, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_216', number: 216, farmer: 'Suresh Gowda', crop: 'potato', weightKg: 180, grade: 'B', podHours: 20, score: 76, isSoldByFarmer: false, status: 'IN_POD' },
+  { id: 'lot_217', number: 217, farmer: 'Ramesh Chandra', crop: 'chilli', weightKg: 100, grade: 'A', podHours: 4, score: 92, isSoldByFarmer: true, status: 'IN_POD' },
+  { id: 'lot_218', number: 218, farmer: 'Lakshmi Devi', crop: 'onion', weightKg: 150, grade: 'A', podHours: 8, score: 88, isSoldByFarmer: true, status: 'IN_POD' },
 ];
 
 export interface CollectiveLoadsProps {
@@ -123,49 +62,117 @@ export interface CollectiveLoadsProps {
 }
 
 export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPayouts }) => {
-  const [selectedOrderId, setSelectedOrderId] = useState<string>(() => {
-    const activeCrop = localStorage.getItem('farmgate_farmer_active_crop')?.toLowerCase();
-    if (activeCrop?.includes('potato')) return 'ORD-774';
-    if (activeCrop?.includes('chilli')) return 'ORD-773';
-    if (activeCrop?.includes('onion')) return 'ORD-775';
-    return 'ORD-771';
+  const { data: rawLots, refetch: refetchLots } = useFarmerLots();
+
+  // 1. Detect active vegetable from cool pod lots or localStorage
+  const [selectedCrop, setSelectedCrop] = useState<string>(() => {
+    const stored = localStorage.getItem('farmgate_farmer_active_crop')?.toLowerCase();
+    if (stored && VEGETABLE_CONFIGS[stored]) return stored;
+    return 'potato'; // default to potato or tomato
   });
-  const [selectedLotIds, setSelectedLotIds] = useState<string[]>(['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
+
+  // When lots are fetched, automatically adapt to the vegetable present in the cool pod
+  useEffect(() => {
+    if (rawLots && rawLots.length > 0) {
+      // Find the most recent active lot in pod or graded
+      const inPodLots = rawLots.filter(
+        (l) =>
+          l.status.toUpperCase() === 'IN_POD' ||
+          l.status.toUpperCase() === 'GRADED' ||
+          l.status.toUpperCase() === 'SOLD'
+      );
+      if (inPodLots.length > 0) {
+        // Look at the latest lot
+        const latestCrop = inPodLots[inPodLots.length - 1].crop.toLowerCase();
+        for (const key of Object.keys(VEGETABLE_CONFIGS)) {
+          if (latestCrop.includes(key) || key.includes(latestCrop)) {
+            setSelectedCrop(key);
+            break;
+          }
+        }
+      }
+    }
+  }, [rawLots]);
+
+  const vegConfig = VEGETABLE_CONFIGS[selectedCrop] || VEGETABLE_CONFIGS.potato;
+
+  // 2. Exactly TWO Verified Buyers (Grade A and Grade B contracts)
+  const buyerOrders = [
+    {
+      id: 'ORD-771',
+      buyerName: 'Annapurna Retail Network',
+      crop: vegConfig.name,
+      icon: vegConfig.icon,
+      grade: 'A',
+      quantityKg: 500,
+      priceRupeesKg: vegConfig.gradeAPrice,
+      deliveryWindow: 'Today 16:00',
+      depositStatus: 'Escrow 100% Cleared',
+      reliability: '98% on-time payment',
+    },
+    {
+      id: 'ORD-772',
+      buyerName: 'FreshBasket Supermarkets',
+      crop: vegConfig.name,
+      icon: vegConfig.icon,
+      grade: 'B',
+      quantityKg: 300,
+      priceRupeesKg: vegConfig.gradeBPrice,
+      deliveryWindow: 'Tomorrow 09:00',
+      depositStatus: 'Escrow 100% Cleared',
+      reliability: '95% on-time payment',
+    },
+  ];
+
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('ORD-771');
+  const [selectedLotIds, setSelectedLotIds] = useState<string[]>([]);
   const [isDispatching, setIsDispatching] = useState(false);
   const [dispatchedManifest, setDispatchedManifest] = useState<any>(null);
 
-  const { data: rawLots, refetch: refetchLots } = useFarmerLots();
+  const activeOrder = buyerOrders.find((o) => o.id === selectedOrderId) || buyerOrders[0];
 
-  const activeOrder = BUYER_ORDERS.find((o) => o.id === selectedOrderId) || BUYER_ORDERS[0];
-
-  // Map live lots from SQLite if available, otherwise fallback
-  const availableLots =
+  // 3. Map lots that match this vegetable
+  const allAvailableLots =
     rawLots && rawLots.length > 0
       ? rawLots
-        .filter(
-          (l) => {
-            const cropMatch =
-              l.crop.toLowerCase().includes(activeOrder.crop.toLowerCase()) ||
-              activeOrder.crop.toLowerCase().includes(l.crop.toLowerCase());
-            return (
-              cropMatch &&
-              (l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'GRADED')
-            );
-          }
-        )
-        .map((l) => ({
-          id: l.id,
-          number: l.lotNumber,
-          farmer: FARMER_NAMES[l.farmerId] || l.farmerId,
-          crop: l.crop,
-          weightKg: Math.round(l.weightGrams / 1000),
-          grade: l.grade,
-          podHours: l.hoursInPod || 14,
-          score: l.buyerMatchScore || 78,
-          status: l.status.toUpperCase(),
-          isSoldByFarmer: l.status.toUpperCase() === 'SOLD' || l.status.toUpperCase() === 'DISPATCHED' || l.status.toUpperCase() === 'PAID',
-        }))
-      : FALLBACK_LOTS;
+          .filter((l) => {
+            const cropMatches =
+              l.crop.toLowerCase().includes(selectedCrop) || selectedCrop.includes(l.crop.toLowerCase());
+            const statusMatches =
+              l.status.toUpperCase() === 'IN_POD' ||
+              l.status.toUpperCase() === 'SOLD' ||
+              l.status.toUpperCase() === 'GRADED';
+            return cropMatches && statusMatches;
+          })
+          .map((l) => ({
+            id: l.id,
+            number: l.lotNumber,
+            farmer: FARMER_NAMES[l.farmerId] || l.farmerName || l.farmerId,
+            crop: l.crop,
+            weightKg: Math.round(l.weightGrams / 1000),
+            grade: l.grade,
+            podHours: l.hoursInPod || 14,
+            score: l.buyerMatchScore || 78,
+            status: l.status.toUpperCase(),
+            isSoldByFarmer:
+              l.status.toUpperCase() === 'SOLD' ||
+              l.status.toUpperCase() === 'DISPATCHED' ||
+              l.status.toUpperCase() === 'PAID',
+          }))
+      : FALLBACK_LOTS.filter((l) => l.crop.toLowerCase().includes(selectedCrop));
+
+  // Filter lots that match current order grade, or show all if none match that specific grade
+  const matchingGradeLots = allAvailableLots.filter((l) => l.grade === activeOrder.grade);
+  const displayedLots = matchingGradeLots.length > 0 ? matchingGradeLots : allAvailableLots;
+
+  // Auto-select displayed lots when order or vegetable changes
+  useEffect(() => {
+    if (displayedLots.length > 0) {
+      setSelectedLotIds(displayedLots.map((l) => l.id));
+    } else {
+      setSelectedLotIds([]);
+    }
+  }, [selectedOrderId, selectedCrop, displayedLots.length]);
 
   const toggleLot = (id: string) => {
     setSelectedLotIds((prev) =>
@@ -174,76 +181,16 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
   };
 
   const autoFillOptimalLots = () => {
-    const matching = availableLots.filter((l) => l.grade === activeOrder.grade);
-    // Prioritize lots where farmer clicked SELL NOW, then highest score
-    const sorted = [...matching].sort((a, b) => {
-      if (a.isSoldByFarmer && !b.isSoldByFarmer) return -1;
-      if (!a.isSoldByFarmer && b.isSoldByFarmer) return 1;
-      return b.score - a.score;
-    });
-
-    let runningWeight = 0;
-    const picked: string[] = [];
-    for (const lot of sorted) {
-      picked.push(lot.id);
-      runningWeight += lot.weightKg;
-      if (runningWeight >= activeOrder.quantityKg) break;
-    }
-    // Also support fallback test IDs
-    setSelectedLotIds(picked.length > 0 ? picked : ['lot_214', 'lot_212', 'lot_210', 'LOT-214', 'LOT-212', 'LOT-210']);
+    const picked = displayedLots.map((l) => l.id);
+    setSelectedLotIds(picked);
   };
 
-  // Filter lots that match current order grade
-  const displayedLots = availableLots.filter((l) => l.grade === activeOrder.grade);
-  const selectedLots = availableLots.filter((l) => selectedLotIds.includes(l.id));
+  const selectedLots = displayedLots.filter((l) => selectedLotIds.includes(l.id));
   const totalWeightKg = selectedLots.reduce((sum, l) => sum + l.weightKg, 0);
   const totalValueRupees = totalWeightKg * activeOrder.priceRupeesKg;
   const isTargetMet = totalWeightKg >= activeOrder.quantityKg;
 
-  // Auto-switch to an order that matches available lots in the Cool Pod if current order has 0 matching lots
-  React.useEffect(() => {
-    if (!rawLots || rawLots.length === 0) return;
-
-    const hasLotsForCurrentOrder = rawLots.some((l) => {
-      const cropMatch =
-        l.crop.toLowerCase().includes(activeOrder.crop.toLowerCase()) ||
-        activeOrder.crop.toLowerCase().includes(l.crop.toLowerCase());
-      return (
-        cropMatch &&
-        (l.status.toUpperCase() === 'IN_POD' ||
-          l.status.toUpperCase() === 'SOLD' ||
-          l.status.toUpperCase() === 'GRADED')
-      );
-    });
-
-    if (!hasLotsForCurrentOrder) {
-      const matchingOrder = BUYER_ORDERS.find((order) =>
-        rawLots.some((l) => {
-          const cropMatch =
-            l.crop.toLowerCase().includes(order.crop.toLowerCase()) ||
-            order.crop.toLowerCase().includes(l.crop.toLowerCase());
-          return (
-            cropMatch &&
-            (l.status.toUpperCase() === 'IN_POD' ||
-              l.status.toUpperCase() === 'SOLD' ||
-              l.status.toUpperCase() === 'GRADED')
-          );
-        })
-      );
-      if (matchingOrder) {
-        setSelectedOrderId(matchingOrder.id);
-      }
-    }
-  }, [rawLots, activeOrder.crop]);
-
-  // Auto-select matching lots when active order changes
-  React.useEffect(() => {
-    const matching = availableLots.filter((l) => l.grade === activeOrder.grade).map((l) => l.id);
-    if (matching.length > 0) {
-      setSelectedLotIds(matching);
-    }
-  }, [selectedOrderId, availableLots.length]);
-
+  // Handle load dispatch
   const handleConfirmDispatch = async () => {
     setIsDispatching(true);
     try {
@@ -251,13 +198,15 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          buyerOrderId: BUYER_DB_ORDER_MAP[activeOrder.id] || 'order_kirana_500kg',
+          buyerOrderId: activeOrder.id === 'ORD-771' ? (selectedCrop === 'potato' ? 'order_potato_500kg' : 'order_kirana_500kg') : 'order_freshbite_200kg',
           lotIds: selectedLotIds,
           dispatchedWeightKg: totalWeightKg,
+          crop: selectedCrop,
+          priceRupeesKg: activeOrder.priceRupeesKg,
         }),
       });
       const data = await res.json();
-      if (data.loadId) {
+      if (data && data.loadId) {
         await fetch(`/api/hub/loads/${data.loadId}/confirm`, {
           method: 'POST',
         });
@@ -274,8 +223,8 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
       });
 
       refetchLots();
-    } catch (err) {
-      // Fallback
+    } catch {
+      // Graceful fallback
       setDispatchedManifest({
         loadNumber: 'CL-04',
         orderId: activeOrder.id,
@@ -290,43 +239,97 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
     }
   };
 
+  // Find all distinct crops currently present in the raw lots or pod
+  const distinctPodCrops = Array.from(
+    new Set(
+      (rawLots || [])
+        .filter((l) => l.status.toUpperCase() === 'IN_POD' || l.status.toUpperCase() === 'GRADED')
+        .map((l) => {
+          const c = l.crop.toLowerCase();
+          for (const key of Object.keys(VEGETABLE_CONFIGS)) {
+            if (c.includes(key)) return key;
+          }
+          return c;
+        })
+    )
+  );
+
   return (
     <div className="space-y-6">
-      {/* Title */}
-      <div className="flex items-center justify-between">
+      {/* Title & Quick Vegetable Switcher */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-mono uppercase tracking-wider text-ink-muted">Operator Console: Demand Aggregation</span>
+          <span className="text-xs font-mono uppercase tracking-wider text-ink-muted">
+            Operator Console: Demand Aggregation
+          </span>
           <h1 className="text-2xl font-serif font-bold text-ink flex items-center gap-2">
             Collective Load Builder & Dispatch
             <Badge variant="simulated">DEMAND MATCHER</Badge>
           </h1>
         </div>
+
+        {/* Vegetable Switcher: Ensures potato means potato and tomato means tomato */}
+        <div className="flex items-center gap-1.5 p-1 bg-surface-elevated border border-border rounded-xl shadow-xs">
+          <span className="text-xs font-semibold text-ink-muted px-2">Produce:</span>
+          {Object.entries(VEGETABLE_CONFIGS).map(([key, config]) => {
+            const isSelected = selectedCrop === key;
+            const hasLotsInPod = distinctPodCrops.includes(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setSelectedCrop(key);
+                  localStorage.setItem('farmgate_farmer_active_crop', key);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-ink-muted hover:text-ink hover:bg-surface'
+                }`}
+              >
+                <span>{config.icon}</span>
+                <span>{config.name}</span>
+                {hasLotsInPod && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Buyer Orders (5 cols) */}
+        {/* Left Column: Exactly TWO Verified Buyer Orders (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <div className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-3">
-            <h2 className="text-base font-bold text-ink flex items-center gap-2">
-              <Package className="w-5 h-5 text-accent" />
-              <span>Verified Buyer Orders ({BUYER_ORDERS.length})</span>
-            </h2>
-            <p className="text-xs text-ink-muted">Select an open buyer demand contract to build a collective dispatch load.</p>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-ink flex items-center gap-2">
+                <Package className="w-5 h-5 text-accent" />
+                <span>Verified Buyer Orders ({buyerOrders.length})</span>
+              </h2>
+              <span className="text-xs font-mono font-bold text-accent">
+                {vegConfig.icon} {vegConfig.name}
+              </span>
+            </div>
+            <p className="text-xs text-ink-muted">
+              Select an open buyer demand contract for <strong>{vegConfig.name}</strong> to build a collective dispatch load.
+            </p>
 
             <div className="space-y-3">
-              {BUYER_ORDERS.map((order) => {
+              {buyerOrders.map((order) => {
                 const isSelected = order.id === selectedOrderId;
                 return (
                   <button
                     key={order.id}
-                    onClick={() => {
-                      setSelectedOrderId(order.id);
-                    }}
-                    className={`w-full p-4 rounded-xl border text-left transition-all ${isSelected
+                    type="button"
+                    onClick={() => setSelectedOrderId(order.id)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${
+                      isSelected
                         ? 'border-accent bg-accent/5 ring-1 ring-accent'
                         : 'border-border bg-surface hover:border-border-strong'
-                      }`}
+                    }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -349,7 +352,9 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                       </div>
                       <div>
                         <span className="text-ink-muted block text-[11px]">Agreed Price:</span>
-                        <span className="font-mono font-bold text-accent">₹{order.priceRupeesKg.toFixed(2)} / kg</span>
+                        <span className="font-mono font-bold text-accent">
+                          ₹{order.priceRupeesKg.toFixed(2)} / kg
+                        </span>
                       </div>
                     </div>
 
@@ -372,56 +377,33 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
           <div className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-ink">Assemble Matching Graded Lots</h2>
-                <p className="text-xs text-ink-muted">Aggregates micro-lots from multiple smallholders into one wholesale load.</p>
+                <h2 className="text-base font-bold text-ink flex items-center gap-2">
+                  <span>Assemble Matching Graded Lots</span>
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-accent/10 text-accent">
+                    {vegConfig.icon} {vegConfig.name}
+                  </span>
+                </h2>
+                <p className="text-xs text-ink-muted">
+                  Aggregates {vegConfig.name.toLowerCase()} micro-lots from multiple smallholders into one wholesale load.
+                </p>
               </div>
 
               <Button variant="outline" size="sm" onClick={autoFillOptimalLots} className="text-xs">
-                Auto-Fill Optimal
+                Auto-Fill All
               </Button>
             </div>
 
             {/* Lots Checklist */}
             <div className="space-y-2.5">
               {displayedLots.length === 0 ? (
-                <div className="p-8 bg-surface border border-dashed border-border rounded-xl text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto text-3xl shadow-xs">
-                    {activeOrder.icon || '📦'}
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-ink">
-                      No Grade {activeOrder.grade} {activeOrder.crop} lots currently ready in Cool Pod
-                    </h4>
-                    <p className="text-xs text-ink-muted max-w-md mx-auto mt-1.5 leading-relaxed">
-                      {rawLots && rawLots.length > 0
-                        ? `You have ${rawLots.length} lot(s) of other crops in the pod. Click below to switch to the matching buyer order:`
-                        : 'Intake fresh produce at the Hub Console to grade and store lots in the solar cool pod.'}
-                    </p>
-                  </div>
-
-                  {rawLots && rawLots.length > 0 && (
-                    <div className="pt-2 flex flex-wrap justify-center gap-2">
-                      {BUYER_ORDERS.filter((o) =>
-                        rawLots.some(
-                          (rl) =>
-                            rl.crop.toLowerCase().includes(o.crop.toLowerCase()) ||
-                            o.crop.toLowerCase().includes(rl.crop.toLowerCase())
-                        )
-                      ).map((o) => (
-                        <Button
-                          key={o.id}
-                          variant="primary"
-                          size="sm"
-                          onClick={() => setSelectedOrderId(o.id)}
-                          className="text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                        >
-                          <span>
-                            Switch to {o.icon} {o.id} ({o.crop} • {o.buyerName}) →
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+                <div className="p-8 bg-surface border border-dashed border-border rounded-xl text-center space-y-3">
+                  <span className="text-4xl block">{vegConfig.icon}</span>
+                  <h4 className="text-base font-bold text-ink">
+                    No {vegConfig.name} lots currently in Cool Pod
+                  </h4>
+                  <p className="text-xs text-ink-muted max-w-sm mx-auto">
+                    Intake fresh {vegConfig.name.toLowerCase()} at Hub Console to grade and store lots in the solar cool pod, or select another produce above.
+                  </p>
                 </div>
               ) : (
                 displayedLots.map((lot) => {
@@ -440,16 +422,24 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => { }}
+                          onChange={() => {}}
                           className="w-4 h-4 accent-accent rounded"
                         />
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono font-bold text-xs text-ink">Lot #{lot.number}</span>
                             <span className="text-xs font-semibold text-ink">{lot.farmer}</span>
+
+                            {/* Vegetable Badge with Emoji */}
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300">
+                              <span>{vegConfig.icon}</span>
+                              <span>{vegConfig.name}</span>
+                            </span>
+
                             <Badge variant={lot.grade === 'A' ? 'grade_a' : 'grade_b'} size="sm">
                               Grade {lot.grade}
                             </Badge>
+
                             {lot.isSoldByFarmer ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -470,7 +460,7 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
 
                       <div className="text-right">
                         <span className="font-mono font-bold text-sm text-ink">{lot.weightKg} kg</span>
-                        <span className="text-[11px] text-accent block font-mono">
+                        <span className="text-[11px] text-accent block font-mono font-bold">
                           ₹{(lot.weightKg * activeOrder.priceRupeesKg).toLocaleString('en-IN')}
                         </span>
                       </div>
@@ -493,7 +483,7 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                 </span>
               </div>
               <div className="flex justify-between text-base font-bold text-accent pt-2 border-t border-border">
-                <span>Wholesale Load Value:</span>
+                <span>Wholesale Load Value ({vegConfig.name}):</span>
                 <span>₹{totalValueRupees.toLocaleString('en-IN')}</span>
               </div>
             </div>
@@ -510,13 +500,15 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                 </div>
 
                 <div className="text-ink-muted space-y-1 font-mono text-[11px] bg-white p-3 rounded-lg border border-emerald-200">
-                  <p><strong>Wholesale Buyer:</strong> {dispatchedManifest.buyer} ({dispatchedManifest.totalWeightKg} kg @ ₹{activeOrder.priceRupeesKg}/kg)</p>
+                  <p>
+                    <strong>Wholesale Buyer:</strong> {dispatchedManifest.buyer} ({dispatchedManifest.totalWeightKg} kg {vegConfig.name} @ ₹{activeOrder.priceRupeesKg}/kg)
+                  </p>
                   <p className="text-emerald-700 font-bold">
                     ✓ 24-Hour Payout SLA Activated ({dispatchedManifest.lotsCount} participating lots queued)
                   </p>
                   <p>
                     ✓ Automated WhatsApp notification sent to{' '}
-                    {Array.from(new Set(selectedLots.map((l) => l.farmer))).join(', ') || 'participating farmers'}.
+                    {Array.from(new Set(selectedLots.map((l) => l.farmer))).join(', ') || 'Murugan K., Ramesh Chandra'}.
                   </p>
                 </div>
 
@@ -603,7 +595,7 @@ export const CollectiveLoads: React.FC<CollectiveLoadsProps> = ({ onNavigateToPa
                 <span>
                   {isDispatching
                     ? 'Dispatching Load & Triggering SLA Clocks...'
-                    : `Confirm Sale & Dispatch Load #CL-04 (${totalWeightKg} kg)`}
+                    : `Confirm Sale & Dispatch Load #CL-04 (${totalWeightKg} kg ${vegConfig.name})`}
                 </span>
               </Button>
             )}
