@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge, Button } from '@farmgate/ui';
 import {
   ShoppingBag,
@@ -6,21 +6,84 @@ import {
   CheckCircle2,
   ShieldCheck,
   QrCode as QrIcon,
-  Clock,
-  ExternalLink,
-  ChevronRight,
   TrendingDown,
   Layers,
-  MapPin,
   ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatRupees, formatWeightKg } from '@farmgate/shared';
+import { useFarmerLots } from '../../api/client';
+
+export function getCropConfig(cropName?: string) {
+  const c = (cropName || 'tomato').toLowerCase();
+  if (c.includes('chilli')) {
+    return {
+      name: 'Green Chilli (G4)',
+      shortName: 'Chilli',
+      icon: '🌶️',
+      gradeAPrice: 42.0,
+      gradeBPrice: 34.0,
+      mandiRef: 48.0,
+      shelfLife: '+6 Days vs Mandi',
+    };
+  }
+  if (c.includes('potato')) {
+    return {
+      name: 'Potato (Kufri Jyoti)',
+      shortName: 'Potato',
+      icon: '🥔',
+      gradeAPrice: 18.0,
+      gradeBPrice: 14.5,
+      mandiRef: 20.0,
+      shelfLife: '+14 Days vs Mandi',
+    };
+  }
+  if (c.includes('onion')) {
+    return {
+      name: 'Red Onion (Nashik)',
+      shortName: 'Onion',
+      icon: '🧅',
+      gradeAPrice: 24.0,
+      gradeBPrice: 19.0,
+      mandiRef: 28.0,
+      shelfLife: '+10 Days vs Mandi',
+    };
+  }
+  return {
+    name: 'Hybrid Tomatoes (Firm Red)',
+    shortName: 'Tomato',
+    icon: '🍅',
+    gradeAPrice: 14.0,
+    gradeBPrice: 11.5,
+    mandiRef: 16.0,
+    shelfLife: '+5 Days vs Mandi',
+  };
+}
+
+const FARMER_NAMES: Record<string, string> = {
+  farmer_meena: 'Ramesh Chandra',
+  'FARMER-001': 'Ramesh Chandra',
+  farmer_ramesh: 'Ramesh Chandra',
+  farmer_murugan: 'Murugan K.',
+  'FARMER-002': 'Murugan K.',
+  farmer_lakshmi: 'Lakshmi Devi',
+  'FARMER-003': 'Lakshmi Devi',
+  farmer_suresh: 'Suresh Gowda',
+  'FARMER-004': 'Suresh Gowda',
+  farmer_arun: 'Arun Kumar',
+  farmer_deepa: 'Deepa M.',
+  farmer_anand: 'Anand V.',
+  farmer_kavita: 'Kavita Devi',
+  farmer_rajesh: 'Rajesh G.',
+  farmer_geetha: 'Geetha R.',
+  farmer_selvam: 'Selvam P.',
+};
 
 interface BuyerLot {
   id: string;
   number: number;
   farmer: string;
+  crop: string;
+  grade: string;
   weightKg: number;
   qrCode: string;
 }
@@ -30,6 +93,7 @@ interface BuyerOrder {
   loadNumber: string;
   buyerName: string;
   crop: string;
+  icon: string;
   grade: string;
   quantityKg: number;
   priceRupeesKg: number;
@@ -45,44 +109,189 @@ interface BuyerOrder {
   lots: BuyerLot[];
 }
 
-const DEFAULT_ORDERS: BuyerOrder[] = [
-  {
-    orderId: 'ORD-771',
-    loadNumber: 'CL-04',
-    buyerName: 'Annapurna Kirana Network',
-    crop: 'Hybrid Tomato',
-    grade: 'Grade A',
-    quantityKg: 500,
-    priceRupeesKg: 14.0,
-    totalEscrowRupees: 7000,
-    savingsRupees: 1000,
-    origin: 'Kolar Hub #01',
-    destination: 'Annapurna DC, Whitefield',
-    vehicle: 'Truck TN-38-K-4412 (Insulated 11.5°C)',
-    eta: 'Today 16:30',
-    status: 'IN TRANSIT • ESCROW LOCKED',
-    depositStatus: 'Escrow 100% Cleared',
-    progressPercent: 75,
-    lots: [
-      { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra (Annur)', weightKg: 120, qrCode: 'FGH-ANNUR-2026-LOT214' },
-      { id: 'lot_212', number: 212, farmer: 'Murugan K. (Kolar)', weightKg: 240, qrCode: 'FGH-KOLAR-2026-LOT212' },
-      { id: 'lot_210', number: 210, farmer: 'Suresh Gowda (Hoskote)', weightKg: 140, qrCode: 'FGH-HOSKOTE-2026-LOT210' },
-    ],
-  },
-];
+interface CatalogSupplyItem {
+  key: string;
+  crop: string;
+  grade: string;
+  title: string;
+  icon: string;
+  farmers: string[];
+  totalAvailableKg: number;
+  cratesCount: number;
+  pricePerKg: number;
+  mandiBenchmark: number;
+  shelfLife: string;
+  lots: Array<{ id: string; number: number; farmer: string; weightKg: number; qrCode: string }>;
+}
 
 export const BuyerPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'catalog' | 'orders' | 'traceability'>('catalog');
-  const [orderQuantityKg, setOrderQuantityKg] = useState<number>(500);
-  const [escrowDeposited, setEscrowDeposited] = useState<boolean>(true);
+  const [orderQuantityKg, setOrderQuantityKg] = useState<number>(120);
+  const [selectedSupplyKey, setSelectedSupplyKey] = useState<string>('');
   const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
-  const [orders, setOrders] = useState<BuyerOrder[]>(DEFAULT_ORDERS);
 
-  const pricePerKg = 14.0;
-  const mandiBenchmarkKg = 16.0;
+  const { data: rawLots } = useFarmerLots();
+
+  // Dynamic grouping of live lots currently stored in the Cool Pod
+  const supplyItems: CatalogSupplyItem[] = React.useMemo(() => {
+    const activeLots = (rawLots && rawLots.length > 0 ? rawLots : []).filter((l) => {
+      const s = (l.status || '').toUpperCase();
+      return s === 'IN_POD' || s === 'GRADED' || s === 'SOLD';
+    });
+
+    if (activeLots.length === 0) {
+      // Fallback supply items if database is totally empty
+      return [
+        {
+          key: 'potato_A',
+          crop: 'Potato',
+          grade: 'A',
+          title: 'Potato (Kufri Jyoti) 🥔',
+          icon: '🥔',
+          farmers: ['Murugan K.'],
+          totalAvailableKg: 120,
+          cratesCount: 6,
+          pricePerKg: 18.0,
+          mandiBenchmark: 20.0,
+          shelfLife: '+14 Days vs Mandi',
+          lots: [{ id: 'lot_215', number: 215, farmer: 'Murugan K.', weightKg: 120, qrCode: 'FGH-ANNUR-2026-LOT215' }],
+        },
+        {
+          key: 'chilli_A',
+          crop: 'Chilli',
+          grade: 'A',
+          title: 'Green Chilli (G4) 🌶️',
+          icon: '🌶️',
+          farmers: ['Lakshmi Devi'],
+          totalAvailableKg: 120,
+          cratesCount: 6,
+          pricePerKg: 42.0,
+          mandiBenchmark: 48.0,
+          shelfLife: '+6 Days vs Mandi',
+          lots: [{ id: 'lot_214', number: 214, farmer: 'Lakshmi Devi', weightKg: 120, qrCode: 'FGH-ANNUR-2026-LOT214' }],
+        },
+        {
+          key: 'tomato_A',
+          crop: 'Tomato',
+          grade: 'A',
+          title: 'Hybrid Tomatoes (Firm Red) 🍅',
+          icon: '🍅',
+          farmers: ['Ramesh Chandra', 'Suresh Gowda'],
+          totalAvailableKg: 380,
+          cratesCount: 19,
+          pricePerKg: 14.0,
+          mandiBenchmark: 16.0,
+          shelfLife: '+5 Days vs Mandi',
+          lots: [
+            { id: 'lot_212', number: 212, farmer: 'Ramesh Chandra', weightKg: 240, qrCode: 'FGH-KOLAR-2026-LOT212' },
+            { id: 'lot_210', number: 210, farmer: 'Suresh Gowda', weightKg: 140, qrCode: 'FGH-HOSKOTE-2026-LOT210' },
+          ],
+        },
+      ];
+    }
+
+    // Group active lots by normalized crop & grade
+    const map = new Map<string, CatalogSupplyItem>();
+
+    for (const lot of activeLots) {
+      const cfg = getCropConfig(lot.crop);
+      const grade = (lot.grade || 'A').toUpperCase();
+      const key = `${cfg.shortName.toLowerCase()}_${grade}`;
+      const farmerName = FARMER_NAMES[lot.farmerId] || lot.farmerName || lot.farmerId;
+      const weightKg = Math.round((lot.weightGrams || 120000) / 1000);
+      const qrCode = lot.qrCode || `FGH-ANNUR-2026-LOT${lot.lotNumber}`;
+
+      if (!map.has(key)) {
+        const unitPrice = grade === 'A' ? cfg.gradeAPrice : cfg.gradeBPrice;
+        const mandiRef = grade === 'A' ? cfg.mandiRef : Math.round(cfg.mandiRef * 0.85);
+
+        map.set(key, {
+          key,
+          crop: cfg.shortName,
+          grade,
+          title: `${cfg.name} ${cfg.icon}`,
+          icon: cfg.icon,
+          farmers: [farmerName],
+          totalAvailableKg: weightKg,
+          cratesCount: Math.ceil(weightKg / 20),
+          pricePerKg: unitPrice,
+          mandiBenchmark: mandiRef,
+          shelfLife: cfg.shelfLife,
+          lots: [{ id: String(lot.id), number: lot.lotNumber, farmer: farmerName, weightKg, qrCode }],
+        });
+      } else {
+        const item = map.get(key)!;
+        item.totalAvailableKg += weightKg;
+        item.cratesCount = Math.ceil(item.totalAvailableKg / 20);
+        if (!item.farmers.includes(farmerName)) item.farmers.push(farmerName);
+        item.lots.push({ id: String(lot.id), number: lot.lotNumber, farmer: farmerName, weightKg, qrCode });
+      }
+    }
+
+    return Array.from(map.values());
+  }, [rawLots]);
+
+  // Set default selected item
+  useEffect(() => {
+    if (supplyItems.length > 0 && !selectedSupplyKey) {
+      setSelectedSupplyKey(supplyItems[0].key);
+      setOrderQuantityKg(supplyItems[0].totalAvailableKg || 120);
+    }
+  }, [supplyItems, selectedSupplyKey]);
+
+  const activeSupplyItem = supplyItems.find((s) => s.key === selectedSupplyKey) || supplyItems[0] || {
+    key: 'default',
+    crop: 'Tomato',
+    grade: 'A',
+    title: 'Hybrid Tomatoes 🍅',
+    icon: '🍅',
+    farmers: ['Ramesh Chandra'],
+    totalAvailableKg: 120,
+    cratesCount: 6,
+    pricePerKg: 14.0,
+    mandiBenchmark: 16.0,
+    shelfLife: '+5 Days vs Mandi',
+    lots: [],
+  };
+
+  const [orders, setOrders] = useState<BuyerOrder[]>(() => [
+    {
+      orderId: 'ORD-771',
+      loadNumber: 'CL-04',
+      buyerName: 'Annapurna Kirana Network',
+      crop: 'Green Chilli (G4)',
+      icon: '🌶️',
+      grade: 'Grade A',
+      quantityKg: 120,
+      priceRupeesKg: 42.0,
+      totalEscrowRupees: 5040,
+      savingsRupees: 720,
+      origin: 'Kolar Hub #01',
+      destination: 'Annapurna DC, Whitefield',
+      vehicle: 'Truck KA-04-E-8891 (Pre-cooled 11.5°C GPS Active)',
+      eta: 'Today 16:30',
+      status: 'IN TRANSIT • ESCROW LOCKED',
+      depositStatus: 'Escrow 100% Cleared',
+      progressPercent: 75,
+      lots: [
+        {
+          id: 'lot_214',
+          number: 214,
+          farmer: 'Lakshmi Devi (Annur)',
+          crop: 'Chilli',
+          grade: 'A',
+          weightKg: 120,
+          qrCode: 'FGH-ANNUR-2026-LOT214',
+        },
+      ],
+    },
+  ]);
+
+  const pricePerKg = activeSupplyItem.pricePerKg;
+  const mandiBenchmarkKg = activeSupplyItem.mandiBenchmark;
   const totalCost = orderQuantityKg * pricePerKg;
   const mandiCost = orderQuantityKg * mandiBenchmarkKg;
-  const buyerSavings = mandiCost - totalCost; // e.g. ₹1,000 savings (12.5%)
+  const buyerSavings = Math.max(0, mandiCost - totalCost);
 
   const handlePlaceOrder = () => {
     const newOrderId = `ORD-${Math.floor(773 + Math.random() * 50)}`;
@@ -92,8 +301,9 @@ export const BuyerPortal: React.FC = () => {
       orderId: newOrderId,
       loadNumber: newLoadNum,
       buyerName: 'Annapurna Kirana Network',
-      crop: 'Hybrid Tomato',
-      grade: 'Grade A',
+      crop: activeSupplyItem.crop,
+      icon: activeSupplyItem.icon,
+      grade: `Grade ${activeSupplyItem.grade}`,
       quantityKg: orderQuantityKg,
       priceRupeesKg: pricePerKg,
       totalEscrowRupees: totalCost,
@@ -105,11 +315,11 @@ export const BuyerPortal: React.FC = () => {
       status: 'ESCROW LOCKED • IN DISPATCH',
       depositStatus: 'Escrow 100% Cleared',
       progressPercent: 30,
-      lots: [
-        { id: 'lot_214', number: 214, farmer: 'Ramesh Chandra (Annur)', weightKg: Math.round(orderQuantityKg * 0.25), qrCode: 'FGH-ANNUR-2026-LOT214' },
-        { id: 'lot_212', number: 212, farmer: 'Murugan K. (Kolar)', weightKg: Math.round(orderQuantityKg * 0.45), qrCode: 'FGH-KOLAR-2026-LOT212' },
-        { id: 'lot_210', number: 210, farmer: 'Suresh Gowda (Hoskote)', weightKg: Math.round(orderQuantityKg * 0.30), qrCode: 'FGH-HOSKOTE-2026-LOT210' },
-      ],
+      lots: activeSupplyItem.lots.map((l) => ({
+        ...l,
+        crop: activeSupplyItem.crop,
+        grade: activeSupplyItem.grade,
+      })),
     };
 
     setOrders((prev) => [newOrder, ...prev]);
@@ -121,8 +331,8 @@ export const BuyerPortal: React.FC = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         buyerId: 'buyer_annapurna',
-        crop: 'tomato',
-        grade: 'A',
+        crop: activeSupplyItem.crop.toLowerCase(),
+        grade: activeSupplyItem.grade,
         quantityGrams: orderQuantityKg * 1000,
         offeredPricePaisePerKg: pricePerKg * 100,
         deliveryWindowHours: 24,
@@ -155,7 +365,7 @@ export const BuyerPortal: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="p-1.5 px-3 bg-accent/10 border border-accent/20 rounded-lg text-accent font-semibold text-xs flex items-center gap-1.5">
               <TrendingDown className="w-3.5 h-3.5" />
-              <span>Sourcing Savings: 12.5% vs Mandi</span>
+              <span>Sourcing Savings: ~12.5% vs Mandi</span>
             </div>
           </div>
         </div>
@@ -165,6 +375,7 @@ export const BuyerPortal: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="flex gap-2 border-b border-border pb-px overflow-x-auto scrollbar-none">
           <button
+            type="button"
             onClick={() => setActiveTab('catalog')}
             className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'catalog'
@@ -173,10 +384,11 @@ export const BuyerPortal: React.FC = () => {
             }`}
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Graded Hub Supply</span>
+            <span>Graded Hub Supply ({supplyItems.length} Produce Available)</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('orders')}
             className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'orders'
@@ -189,6 +401,7 @@ export const BuyerPortal: React.FC = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('traceability')}
             className={`pb-3 px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'traceability'
@@ -210,76 +423,76 @@ export const BuyerPortal: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-bold text-ink">Ready Graded Collective Lots</h2>
-                    <p className="text-xs text-ink-muted">Pre-cooled at 11.5°C in Kolar Solar Pods. Immediate dispatch.</p>
+                    <p className="text-xs text-ink-muted">
+                      Live inventory pre-cooled at 11.5°C in Kolar Solar Cool Pod. Immediate wholesale dispatch.
+                    </p>
                   </div>
-                  <Badge variant="simulated">LIVE INVENTORY</Badge>
+                  <Badge variant="simulated">POD SENSOR FEED</Badge>
                 </div>
 
-                {/* Listing Item 1: Grade A Tomatoes */}
-                <div className="bg-surface p-4 rounded-xl border border-border space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-sm text-ink">Hybrid Tomatoes (Firm Red / Pink)</h3>
-                        <Badge variant="grade_a">Grade A</Badge>
+                {/* Dynamic Listing of Lots in the Cool Pod */}
+                <div className="space-y-3">
+                  {supplyItems.map((item) => {
+                    const isSelected = item.key === selectedSupplyKey;
+                    return (
+                      <div
+                        key={item.key}
+                        onClick={() => {
+                          setSelectedSupplyKey(item.key);
+                          setOrderQuantityKg(item.totalAvailableKg);
+                        }}
+                        className={`p-4 rounded-xl border transition-all cursor-pointer space-y-3 ${
+                          isSelected
+                            ? 'border-accent bg-accent/5 ring-1 ring-accent shadow-xs'
+                            : 'bg-surface border-border hover:border-border-strong'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-sm text-ink">{item.title}</h3>
+                              <Badge variant={item.grade === 'A' ? 'grade_a' : 'grade_b'}>
+                                Grade {item.grade}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-ink-muted mt-0.5">
+                              Sourced from Kolar Cluster ({item.farmers.slice(0, 3).join(', ')}
+                              {item.farmers.length > 3 ? ` +${item.farmers.length - 3}` : ''})
+                            </p>
+                          </div>
+                          <span className="font-mono text-base font-bold text-accent">
+                            ₹{item.pricePerKg.toFixed(2)} / kg
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 text-xs font-mono bg-surface-elevated p-2.5 rounded-lg border border-border">
+                          <div>
+                            <span className="text-ink-muted block text-[10px]">AVAILABLE IN POD:</span>
+                            <span className="font-bold text-ink">
+                              {item.totalAvailableKg} kg ({item.cratesCount} crates)
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-ink-muted block text-[10px]">TEMP CONTROL:</span>
+                            <span className="font-bold text-accent">11.5°C Optimal</span>
+                          </div>
+                          <div>
+                            <span className="text-ink-muted block text-[10px]">SHELF LIFE:</span>
+                            <span className="font-bold text-ink">{item.shelfLife}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs pt-1">
+                          <span className="text-ink-muted">
+                            Mandi benchmark: ₹{item.mandiBenchmark.toFixed(2)}/kg + commission
+                          </span>
+                          <span className="font-bold text-accent">
+                            Click to select for Escrow Contract →
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-xs text-ink-muted mt-0.5">
-                        Sourced from Kolar Cluster (3 Smallholders: Ramesh, Murugan, Suresh)
-                      </p>
-                    </div>
-                    <span className="font-mono text-base font-bold text-accent">₹14.00 / kg</span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-xs font-mono bg-surface-elevated p-2.5 rounded-lg border border-border">
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">AVAILABLE:</span>
-                      <span className="font-bold text-ink">500 kg (25 crates)</span>
-                    </div>
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">TEMP CONTROL:</span>
-                      <span className="font-bold text-accent">11.5°C Optimal</span>
-                    </div>
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">SHELF LIFE:</span>
-                      <span className="font-bold text-ink">+5 Days vs Mandi</span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center text-xs pt-1">
-                    <span className="text-ink-muted">Traditional Mandi equivalent: ₹16.00/kg + 6% commission</span>
-                    <span className="font-bold text-accent">Save ₹1,000+ on this load</span>
-                  </div>
-                </div>
-
-                {/* Listing Item 2: Grade B Tomatoes */}
-                <div className="bg-surface p-4 rounded-xl border border-border space-y-3 opacity-90">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-sm text-ink">Table Tomatoes (Turning Stage)</h3>
-                        <Badge variant="grade_b">Grade B</Badge>
-                      </div>
-                      <p className="text-xs text-ink-muted mt-0.5">
-                        Ideal for institutional kitchens & catering networks
-                      </p>
-                    </div>
-                    <span className="font-mono text-base font-bold text-ink">₹11.50 / kg</span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-xs font-mono bg-surface-elevated p-2.5 rounded-lg border border-border">
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">AVAILABLE:</span>
-                      <span className="font-bold text-ink">300 kg (15 crates)</span>
-                    </div>
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">TEMP CONTROL:</span>
-                      <span className="font-bold text-accent">11.5°C Optimal</span>
-                    </div>
-                    <div>
-                      <span className="text-ink-muted block text-[10px]">DISPATCH:</span>
-                      <span className="font-bold text-ink">Tomorrow 09:00</span>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -296,28 +509,46 @@ export const BuyerPortal: React.FC = () => {
                 </div>
 
                 <div className="space-y-3 text-xs">
+                  {/* Selected Crop Overview */}
+                  <div className="p-3 bg-surface rounded-lg border border-border flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono text-ink-muted block uppercase">Selected Produce</span>
+                      <span className="font-bold text-sm text-ink">{activeSupplyItem.title}</span>
+                    </div>
+                    <Badge variant={activeSupplyItem.grade === 'A' ? 'grade_a' : 'grade_b'}>
+                      Grade {activeSupplyItem.grade}
+                    </Badge>
+                  </div>
+
                   <div>
                     <label className="font-medium text-ink block mb-1">Contract Quantity (KG):</label>
                     <div className="flex items-center gap-2">
-                      {[250, 500, 1000].map((qty) => (
-                        <button
-                          key={qty}
-                          onClick={() => setOrderQuantityKg(qty)}
-                          className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border transition-all ${
-                            orderQuantityKg === qty
-                              ? 'bg-accent text-white border-accent ring-1 ring-accent'
-                              : 'bg-surface border-border text-ink hover:border-border-strong'
-                          }`}
-                        >
-                          {qty} kg
-                        </button>
-                      ))}
+                      {[
+                        Math.min(activeSupplyItem.totalAvailableKg, 120),
+                        Math.min(activeSupplyItem.totalAvailableKg, 250),
+                        activeSupplyItem.totalAvailableKg,
+                      ]
+                        .filter((v, i, a) => a.indexOf(v) === i)
+                        .map((qty) => (
+                          <button
+                            key={qty}
+                            type="button"
+                            onClick={() => setOrderQuantityKg(qty)}
+                            className={`flex-1 py-1.5 rounded-lg font-mono font-bold text-xs border transition-all ${
+                              orderQuantityKg === qty
+                                ? 'bg-accent text-white border-accent ring-1 ring-accent'
+                                : 'bg-surface border-border text-ink hover:border-border-strong'
+                            }`}
+                          >
+                            {qty} kg
+                          </button>
+                        ))}
                     </div>
                   </div>
 
                   <div className="bg-surface p-3.5 rounded-lg border border-border space-y-2 font-mono">
                     <div className="flex justify-between text-ink-muted">
-                      <span>Rate:</span>
+                      <span>Rate ({activeSupplyItem.crop}):</span>
                       <span>₹{pricePerKg.toFixed(2)} / kg</span>
                     </div>
                     <div className="flex justify-between text-ink-muted">
@@ -330,7 +561,7 @@ export const BuyerPortal: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-[11px] text-emerald-700">
                       <span>Your Guaranteed Sourcing Savings:</span>
-                      <span>₹{buyerSavings.toLocaleString('en-IN')} (12.5%)</span>
+                      <span>₹{buyerSavings.toLocaleString('en-IN')} vs Mandi</span>
                     </div>
                   </div>
 
@@ -348,6 +579,7 @@ export const BuyerPortal: React.FC = () => {
                         Consignment #{orders[0].loadNumber} is prepared for dispatch. Opening active tracking...
                       </p>
                       <button
+                        type="button"
                         onClick={() => setActiveTab('orders')}
                         className="text-xs font-bold text-accent underline flex items-center gap-1"
                       >
@@ -379,7 +611,7 @@ export const BuyerPortal: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-accent animate-pulse" />
                     <h2 className="text-base font-bold text-ink">
-                      Active Collective Load: #{order.loadNumber} ({order.quantityKg} kg)
+                      Active Collective Load: #{order.loadNumber} ({order.quantityKg} kg {order.crop} {order.icon})
                     </h2>
                     <span className="text-xs font-mono text-accent">({order.orderId})</span>
                   </div>
@@ -422,7 +654,7 @@ export const BuyerPortal: React.FC = () => {
                   <div>
                     <span className="text-ink-muted">Escrow Locked:</span>{' '}
                     <strong className="text-accent">₹{order.totalEscrowRupees.toLocaleString('en-IN')}</strong>{' '}
-                    ({order.quantityKg} kg @ ₹{order.priceRupeesKg}/kg)
+                    ({order.quantityKg} kg {order.crop} @ ₹{order.priceRupeesKg}/kg)
                   </div>
                   <div className="text-emerald-700">
                     <span className="text-ink-muted">Guaranteed Savings:</span>{' '}
@@ -444,6 +676,9 @@ export const BuyerPortal: React.FC = () => {
                             <span className="font-mono font-bold text-ink">{lot.weightKg} kg</span>
                           </div>
                           <p className="text-[11px] text-ink-muted mt-1">Farmer: {lot.farmer}</p>
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-accent/10 text-accent">
+                            {lot.crop} (Grade {lot.grade})
+                          </span>
                         </div>
                         <Link
                           to={`/t/${lot.qrCode}`}
@@ -463,9 +698,11 @@ export const BuyerPortal: React.FC = () => {
         {/* Tab 3: Lot Traceability Explorer */}
         {activeTab === 'traceability' && (
           <div className="bg-surface-elevated border border-border rounded-xl p-5 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-ink">Public QR Traceability Explorer ({allTraceableLots.length} Lots Available)</h2>
+            <h2 className="text-base font-bold text-ink">
+              Public QR Traceability Explorer ({allTraceableLots.length} Lots Available)
+            </h2>
             <p className="text-xs text-ink-muted">
-              Every crate sold to Annapurna contains an indelible QR code allowing consumers and store managers to verify harvest origin, grading, and farmer payout fairness.
+              Every crate sold through FarmGate Hub contains an indelible QR code allowing consumers and store managers to verify harvest origin, cool pod holding hours, grading, and farmer payout fairness.
             </p>
 
             <div className="space-y-3">
@@ -474,7 +711,7 @@ export const BuyerPortal: React.FC = () => {
                   <div>
                     <span className="font-mono font-bold text-sm text-ink">QR Code: {lot.qrCode}</span>
                     <p className="text-xs text-ink-muted mt-0.5">
-                      Lot #{lot.number}: {lot.weightKg} kg Grade A Hybrid Tomatoes ({lot.farmer})
+                      Lot #{lot.number}: {lot.weightKg} kg Grade {lot.grade} {lot.crop} ({lot.farmer})
                     </p>
                   </div>
 
